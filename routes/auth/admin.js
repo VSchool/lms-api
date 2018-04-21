@@ -33,7 +33,7 @@ adminAuthRouter.route("/signup")
         if (!req.user.email) return res.status(403).send({ message: "User not authorized to be an admin" });
         AdminUserModel.findOne({ email: req.user.email }, (err, foundUser) => {
             if (err) return res.send(err);
-            if (foundUser) return res.status(401).send({ success: false, message: "User already exists" });
+            if (foundUser) return res.status(403).send({ success: false, message: "User already exists" });
             const admin = new AdminUserModel({ ...req.body, ...req.user });
             admin.save((err, user) => {
                 if (err) return res.send(err);
@@ -65,13 +65,13 @@ adminAuthRouter.route("/login")
         })
     });
 
-adminAuthRouter.route("/authorize")
+adminAuthRouter.route("/authorize/invite-admin")
     .post((req, res) => {
         const { email, name } = req.body;
         if (req.user.permissions.rootAccess) {
             AdminUserModel.findOne({ email }, (err, foundUser) => {
                 if (err) return res.send(err);
-                if (foundUser) return res.status(401).send({ success: false, message: "User already exists" });
+                if (foundUser) return res.status(403).send({ success: false, message: "User already exists" });
                 const token = jwt.sign(req.body, process.env.SECRET, { expiresIn: 1000 * 60 * 60 * 24 });
                 nodemailer.createTestAccount((err, account) => {
                     const transporter = nodemailer.createTransport({
@@ -100,15 +100,27 @@ adminAuthRouter.route("/authorize")
                 })
             });
         } else {
-            res.status(403).send({ message: "Unauthorized action" });
+            res.status(403).send({ message: "Admin access denied" });
+        }
+    });
+adminAuthRouter.route("/authorize/allow-root/:id")
+    .post((req, res) => {
+        if (req.user.permissions.rootAccess) {
+            AdminUserModel.findById(req.params.id, (err, admin) => {
+                if (err) return res.send(err);
+                if (!admin) return res.status(404).send({ message: "User not found" });
+                if (admin.permissions.rootAccess) return res.status(403).send({ message: "Admin already has root access" });
+                if (!admin.permissions.admin) return res.status(403).send({ message: "User is not an admin" })
+                admin.update({ $set: { "permissions.rootAccess": true } }, { new: true }, (err, ok) => {
+                    if (err) return res.send(err);
+                    res.status(200).send(admin.secure());
+                })
+            })
+        } else {
+            res.status(403).send({ message: "Root access denied" })
         }
     })
-// authorize an admin:
-// create a jwt using user email as payload
-// send link containing jwt via email
 
-//click on link, add token to local storage
-// send to signup page
 
 
 module.exports = adminAuthRouter;
