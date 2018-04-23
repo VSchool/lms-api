@@ -2,8 +2,17 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const CohortSchema = new Schema({
-    name: {
+    startingMonth: {
         type: String,
+        required: true,
+        enum: ["January", "February", "March", "April", "May", "June", "July", "Auguset", "September", "October", "November", "December"]
+    },
+    startingDate: {
+        type: Date,
+        required: true
+    },
+    endingDate: {
+        type: Date,
         required: true
     },
     classType: {

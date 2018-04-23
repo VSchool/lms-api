@@ -14,6 +14,10 @@ const DaySchema = new Schema({
         required: true,
         ref: "Users"
     },
+    date: {
+        type: Date,
+        required: true
+    }
 
 }, options);
 

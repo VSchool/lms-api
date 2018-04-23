@@ -33,7 +33,7 @@ adminAuthRouter.route("/signup")
         if (!req.user.email) return res.status(403).send({ message: "User not authorized to be an admin" });
         AdminUserModel.findOne({ email: req.user.email }, (err, foundUser) => {
             if (err) return res.send(err);
-            if (foundUser) return res.status(403).send({ success: false, message: "User already exists" });
+            if (foundUser) return res.status(403).send({ message: "User already exists" });
             const admin = new AdminUserModel({ ...req.body, ...req.user });
             admin.save((err, user) => {
                 if (err) return res.send(err);
@@ -41,7 +41,7 @@ adminAuthRouter.route("/signup")
                     id: user._id,
                     permissions: user.permissions
                 }, process.env.SECRET, { expiresIn: 1000 * 60 * 60 });
-                res.status(201).send({ success: true, token, user: user.secure() });
+                res.status(201).send({ token, user: user.secure() });
             })
         })
     })
@@ -49,7 +49,7 @@ adminAuthRouter.route("/login")
     .post((req, res) => {
         AdminUserModel.findOne({ email: req.body.email }, (err, user) => {
             if (err) return res.send(err);
-            if (!user) return res.status(401).send({ success: false, message: "Invalid username" })
+            if (!user) return res.status(401).send({ message: "Invalid username" })
             user.auth(req.body.password, (err, isAuthorized) => {
                 if (err) return res.send(err);
                 if (isAuthorized) {
@@ -57,9 +57,9 @@ adminAuthRouter.route("/login")
                         id: user._id,
                         permissions: user.permissions
                     }, process.env.SECRET, { expiresIn: 1000 * 60 * 60 });
-                    res.status(201).send({ success: true, token, user: user.secure() });
+                    res.status(201).send({ token, user: user.secure() });
                 } else {
-                    return res.status(401).send({ success: false, message: "Invalid password" });
+                    return res.status(401).send({ message: "Invalid password" });
                 }
             })
         })
@@ -71,7 +71,7 @@ adminAuthRouter.route("/authorize/invite-admin")
         if (req.user.permissions.rootAccess) {
             AdminUserModel.findOne({ email }, (err, foundUser) => {
                 if (err) return res.send(err);
-                if (foundUser) return res.status(403).send({ success: false, message: "User already exists" });
+                if (foundUser) return res.status(403).send({ message: "User already exists" });
                 const token = jwt.sign(req.body, process.env.SECRET, { expiresIn: 1000 * 60 * 60 * 24 });
                 nodemailer.createTestAccount((err, account) => {
                     const transporter = nodemailer.createTransport({
@@ -119,7 +119,16 @@ adminAuthRouter.route("/authorize/allow-root/:id")
         } else {
             res.status(403).send({ message: "Root access denied" })
         }
-    })
+    });
+
+adminAuthRouter.route("/authorize")
+    .get((req, res) => {
+        AdminUserModel.findById(req.user.id, (err, user) => {
+            if (err) return res.send(err);
+            if (!user) return res.status(401).send({ message: "User doesn't exist" })
+            res.status(201).send(user.secure())
+        });
+    });
 
 
 

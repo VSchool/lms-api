@@ -14,6 +14,10 @@ const userSchema = new Schema({
         required: true,
         type: String
     },
+    avatar: {
+        type: String,
+        default: ""
+    },
     name: {
         f: {
             required: true,
@@ -66,6 +70,10 @@ const StudentUserModel = UserModel.discriminator("StudentUser", new Schema({
         required: true,
         type: mongoose.Schema.Types.ObjectId,
         ref: "Cohorts"
+    },
+    passed: {
+        type: Boolean,
+        default: false
     }
 }, options));
 
