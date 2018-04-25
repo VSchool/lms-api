@@ -57,6 +57,8 @@ studentAuthRouter.route("/login")
             });
         });
     });
+
+    // VERIFY STUDENT HAS VALID TOKEN
 studentAuthRouter.route("/authorize")
     .get((req, res) => {
         StudentUserModel.findById(req.user.id, (err, student) => {

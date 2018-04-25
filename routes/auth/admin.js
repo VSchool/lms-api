@@ -65,6 +65,7 @@ adminAuthRouter.route("/login")
         })
     });
 
+// INVITE USER AS ADMIN
 adminAuthRouter.route("/authorize/invite-admin")
     .post((req, res) => {
         const { email, name } = req.body;
@@ -73,6 +74,7 @@ adminAuthRouter.route("/authorize/invite-admin")
                 if (err) return res.send(err);
                 if (foundUser) return res.status(403).send({ message: "User already exists" });
                 const token = jwt.sign(req.body, process.env.SECRET, { expiresIn: 1000 * 60 * 60 * 24 });
+                // TEST EMAIL ACCOUNT
                 nodemailer.createTestAccount((err, account) => {
                     const transporter = nodemailer.createTransport({
                         host: 'smtp.ethereal.email',
@@ -81,6 +83,8 @@ adminAuthRouter.route("/authorize/invite-admin")
                             pass: account.pass
                         },
                     });
+                    // LINK WILL POINT TO ACTUAL SIGNUP/LANDING PAGE
+                    const fakeOrigin = "http://lms.vschool.io/admin-signup";
                     const message = {
                         from: "bturner@vschool.io",
                         to: email,
@@ -89,7 +93,7 @@ adminAuthRouter.route("/authorize/invite-admin")
                                 <div style="text-align: center">
                                     <h3>VSchool LMS Admin Authorization</h3>
                                     <p>Name: ${name.f} ${name.l}</p>
-                                    <a href="#">http://lms.vschool.io/admin-signup?token=${token}</p>
+                                    <a href="#">${fakeOrigin}?token=${token}</p>
                                 </div>
                                 `
                     }
@@ -103,6 +107,8 @@ adminAuthRouter.route("/authorize/invite-admin")
             res.status(403).send({ message: "Admin access denied" });
         }
     });
+
+// GIVE ADMIN ROOT ACCESS
 adminAuthRouter.route("/authorize/allow-root/:id")
     .post((req, res) => {
         if (req.user.permissions.rootAccess) {
@@ -121,12 +127,13 @@ adminAuthRouter.route("/authorize/allow-root/:id")
         }
     });
 
+// VERIFY ADMIN HAS VALID TOKEN
 adminAuthRouter.route("/authorize")
     .get((req, res) => {
         AdminUserModel.findById(req.user.id, (err, user) => {
             if (err) return res.send(err);
             if (!user) return res.status(401).send({ message: "User doesn't exist" })
-            res.status(201).send(user.secure())
+            res.status(200).send(user.secure())
         });
     });
 
