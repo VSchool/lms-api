@@ -9,11 +9,9 @@ const assignmentSchema = new Schema({
         type: String,
         required: true
     },
-    assignmentType: {
-        type: String,
-        enum: ["project", "exercise"],
-        default: "exercise"
-    },
+    tags: [{
+        type: String
+    }],
     courseworkUrl: {
         type: String,
         required: true
@@ -38,6 +36,30 @@ const assignmentSchema = new Schema({
 
 const AssignmentsModel = mongoose.model("Assignments", AssignmentsModel);
 
+//BOTH PROJECTS AND EXERCISES:
+const CodingAssignmentsModel = AssignmentsModel.discriminator("CodingAssignments", new Schema({
+    githubUrl: {
+        type: String,
+        required: true
+    },
+    assignmentType: {
+        type: String,
+        required: true,
+        enum: ["project", "exercise"]
+    }
+}, options));
+
+//INTERVIEW AND QUIZZES 
+const NonCodingAssignmentsModel = AssignmentsModel.discriminator("NonCodingAssignments", new Schema({
+    assignmentType: {
+        type: String,
+        required: true,
+        enum: ["quiz", "interview"]
+    }
+}, options))
+
 module.exports = {
-    AssignmentsModel
+    AssignmentsModel,
+    CodingAssignmentsModel,
+    NonCodingAssignmentsModel
 }
