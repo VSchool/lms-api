@@ -16,7 +16,10 @@ const DaySchema = new Schema({
     },
     date: {
         type: Date,
-        required: true
+        required: true  
+    },
+    label: {
+        type: String
     }
 
 }, options);
@@ -31,23 +34,11 @@ const InSessionDay = DayModel.discriminator("InSessionDay", new Schema({
     attended: {
         type: Boolean,
         default: false
-    }
-}, options));
-
-const NoSessionDay = DayModel.discriminator("NoSessionDay", new Schema({
-    reason: {
-        type: String,
-        required: true,
-        enum: ["holiday", "weekend"]
     },
-    name: {
-        type: String,
-        required: true
-    }
-}, options))
+    
+}, options));
 
 module.exports = {
     DayModel,
-    InSessionDay,
-    NoSessionDay
+    InSessionDay
 };
