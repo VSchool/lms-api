@@ -28,6 +28,9 @@ const MultChoiceQuestionModel = mongoose.model("MultChoiceQuestions", new Schema
     correctIndex: {
         type: Number,
         required: true
+    },
+    answerProvided: {
+        type: Number
     }
 }, options));
 
@@ -35,6 +38,9 @@ const TextQuestionModel = mongoose.model("TextQuestions", new Schema({
     answerText: {
         type: String,
         required: true
+    },
+    answerProvided: {
+        type: String
     }
 }, options))
 

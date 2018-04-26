@@ -24,7 +24,8 @@ studentAuthRouter.route("/signup/:cohortId")
                 newStudent.save((err, savedStudent) => {
                     if (err) return res.send(err);
                     const token = jwt.sign({
-                        id: savedStudent._id, cohortId,
+                        id: savedStudent._id,
+                        cohortId,
                         permissions: {
                             admin: false,
                             rootAccess: false
@@ -45,6 +46,7 @@ studentAuthRouter.route("/login")
                 if (isAuthorized) {
                     const token = jwt.sign({
                         id: student._id,
+                        cohortId: student.cohortId,
                         permissions: {
                             admin: false,
                             rootAccess: false
@@ -58,7 +60,7 @@ studentAuthRouter.route("/login")
         });
     });
 
-    // VERIFY STUDENT HAS VALID TOKEN
+// VERIFY STUDENT HAS VALID TOKEN
 studentAuthRouter.route("/authorize")
     .get((req, res) => {
         StudentUserModel.findById(req.user.id, (err, student) => {

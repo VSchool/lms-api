@@ -41,8 +41,8 @@ userSchema.pre("save", function (next) {
 });
 userSchema.methods.secure = function () {
     const user = this.toObject();
+    //remove sensitive info from user object before sending it back to client
     delete user.password;
-    delete user._id;
     delete user.permissions;
     return user;
 }

@@ -28,38 +28,33 @@ const assignmentSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ["assigned", "unassigned", "submitted", "completed"],
+        enum: ["assigned", "unassigned", "submitted", "passed", "failed"],
         default: "unassigned",
         required: true
     },
+    assignmentType: {
+        type: String,
+        required: true,
+        enum: ["project", "exercise", "interview", "quiz"]
+    }
 }, options);
 
-const AssignmentsModel = mongoose.model("Assignments", AssignmentsModel);
+const AssignmentsModel = mongoose.model("Assignments", assignmentSchema);
 
 //BOTH PROJECTS AND EXERCISES:
 const CodingAssignmentsModel = AssignmentsModel.discriminator("CodingAssignments", new Schema({
     githubUrl: {
         type: String,
         required: true
-    },
-    assignmentType: {
-        type: String,
-        required: true,
-        enum: ["project", "exercise"]
     }
 }, options));
 
-//INTERVIEW AND QUIZZES 
-const NonCodingAssignmentsModel = AssignmentsModel.discriminator("NonCodingAssignments", new Schema({
-    assignmentType: {
-        type: String,
-        required: true,
-        enum: ["quiz", "interview"]
-    }
+const QuizModel = AssignmentsModel.discriminator("QuizModel", new Schema({
+
 }, options))
 
 module.exports = {
     AssignmentsModel,
     CodingAssignmentsModel,
-    NonCodingAssignmentsModel
+    QuizModel
 }
