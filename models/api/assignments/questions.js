@@ -6,7 +6,8 @@ const options = { discriminatorKey: "kind" }
 const questionSchema = new Schema({
     assignment: {
         type: Schema.Types.ObjectId,
-        required: true
+        ref: "Assignments",
+        required: true,
     },
     question: {
         type: String,
@@ -20,7 +21,7 @@ const questionSchema = new Schema({
 
 const QuestionModel = mongoose.model("Questions", questionSchema);
 
-const MultChoiceQuestionModel = mongoose.model("MultChoiceQuestions", new Schema({
+const MultChoiceQuestionModel = QuestionModel.discriminator("MultChoiceQuestions", new Schema({
     options: [{
         type: String,
         required: true
@@ -30,17 +31,19 @@ const MultChoiceQuestionModel = mongoose.model("MultChoiceQuestions", new Schema
         required: true
     },
     answerProvided: {
-        type: Number
+        type: Number,
+        default: null
     }
 }, options));
 
-const TextQuestionModel = mongoose.model("TextQuestions", new Schema({
+const TextQuestionModel = QuestionModel.discriminator("TextQuestions", new Schema({
     answerText: {
         type: String,
         required: true
     },
     answerProvided: {
-        type: String
+        type: String,
+        default: null
     }
 }, options))
 

@@ -11,28 +11,30 @@ const { AssignmentsModel } = require("../../../models/api/assignments/");
 
 feedbackRouter.route("/")
     .get((req, res) => {
-        FeedbackModel.find({ ...req.query, assignment: req.params.assignmentId }, (err, feedback) => {
+        const { assignmentId } = req.params;
+        FeedbackModel.find({ ...req.query, assignment: assignmentId, }, (err, feedback) => {
             if (err) return res.send(err);
             res.status(200).send(feedback);
         });
     })
     .post((req, res) => {
+        const { assignmentId } = req.params;
         if (req.user.permissions.admin) {
-            AssignmentsModel.findById(req.params.assignmentId, (err, foundAssignment) => {
+            AssignmentsModel.findById(assignmentId, (err, foundAssignment) => {
                 if (err) return res.send(err);
+                if (!assignment) return res.status(404).send({ message: "Assignment not found" })
                 let newFeedback;
+                const body = { ...req.body, assignment: assignmentId, instructor: req.user.id }
                 switch (foundAssignment.kind) {
                     case "CodingAssignments":
-                        newFeedback = new CodingFeedbackModel(req.body);
+                        newFeedback = new CodingFeedbackModel(body);
                         break;
                     case "QuizModel":
-                        newFeedback = new NonCodingFeedbackModel(req.body);
+                        newFeedback = new NonCodingFeedbackModel(body);
                         break;
                     default:
-                        return res.status(403).send({ message: "'type' query must be provided" })
+                        return res.status(403).send({ message: "No assignment matches that kind" })
                 }
-                newFeedback.assignment = req.params.assignmentId;
-                newFeedback.instructor = req.user.id;
                 newFeedback.save((err, savedFeedback) => {
                     if (err) return res.send(err);
                     res.status(201).send(savedFeedback);
