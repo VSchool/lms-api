@@ -3,6 +3,8 @@ const express = require("express");
 const { AssignmentsModel, CodingAssignmentsModel, QuizModel } = require("../../../models/api/assignments/");
 
 const assignmentsRouter = express.Router();
+assignmentsRouter.use("/:assignmentId/feedback", require("./feedback.js"));
+assignmentsRouter.use("/:assignmentId/questions", require("./questions.js"));
 
 assignmentsRouter.route("/")
     .get((req, res) => {
