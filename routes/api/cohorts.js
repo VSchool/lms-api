@@ -23,18 +23,10 @@ cohortRouter.route("/")
 
 cohortRouter.route("/:id")
     .get((req, res) => {
-        if (req.user.permissions.admin) {
-            CohortModel.findById(req.params.id, (err, cohort) => {
-                if (err) return res.send(err);
-                res.status(200).send(cohort);
-            })
-        } else {
-            //ensures student user can only access their own cohort
-            CohortModel.findById(req.user.id), (err, cohort) => {
-                if (err) return res.send(err);
-                res.status(200).send(cohort);
-            }
-        }
+        CohortModel.findById(req.params.id, (err, cohort) => {
+            if (err) return res.send(err);
+            res.status(200).send(cohort);
+        })
     })
 
 
