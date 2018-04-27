@@ -27,7 +27,7 @@ assignmentsRouter.route("/")
             let newAssignment;
             if (type === "quiz") {
                 newAssignment = new QuizModel(req.body);
-            } else if (type === "coding") {
+            } else if (type === "code") {
                 newAssignment = new CodingAssignmentsModel(req.body);
             } else {
                 return res.status(403).send({message: "no matching query 'type' was found"})

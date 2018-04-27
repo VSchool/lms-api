@@ -14,11 +14,15 @@ cohortRouter.route("/")
         }
     })
     .post((req, res) => {
-        const newCohort = new CohortModel(req.body);
-        newCohort.save((err, savedCohort) => {
-            if (err) return res.send(err);
-            res.status(201).send(savedCohort);
-        });
+        if (req.user.permissions.admin) {
+            const newCohort = new CohortModel(req.body);
+            newCohort.save((err, savedCohort) => {
+                if (err) return res.send(err);
+                res.status(201).send(savedCohort);
+            });
+        } else {
+            res.status(403).send({ message: "Admin authorization required" });
+        }
     });
 
 cohortRouter.route("/:id")
@@ -26,7 +30,27 @@ cohortRouter.route("/:id")
         CohortModel.findById(req.params.id, (err, cohort) => {
             if (err) return res.send(err);
             res.status(200).send(cohort);
-        })
+        });
+    })
+    .put((req, res) => {
+        if (req.user.permissions.admin) {
+            CohortModel.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, cohort) => {
+                if (err) return res.status(500).send(err);
+                res.status(200).send(cohort);
+            })
+        } else {
+            res.status(403).send({ message: "Admin authorization required" });
+        }
+    })
+    .delete((req, res) => {
+        if (req.user.permissions.rootAccess) {
+            CohortModel.findByIdAndRemove(req.params.id, (err, cohort) => {
+                if(err)return res.status(500).send(err);
+                res.status(204).send();
+            })
+        } else {
+            res.status(403).send({ message: "Root authorization required" });
+        }
     })
 
 
