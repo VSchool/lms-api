@@ -84,16 +84,15 @@ adminAuthRouter.route("/authorize/invite-admin")
                         },
                     });
                     // LINK WILL POINT TO ACTUAL SIGNUP/LANDING PAGE
-                    const fakeOrigin = "http://lms.vschool.io/admin-signup";
                     const message = {
-                        from: "bturner@vschool.io",
+                        from: process.env.ADMIN_SENDER_EMAIL,
                         to: email,
                         subject: "VSchool LMS Admin Authorization",
                         html: `
                                 <div style="text-align: center">
                                     <h3>VSchool LMS Admin Authorization</h3>
                                     <p>Name: ${name.f} ${name.l}</p>
-                                    <a href="#">${fakeOrigin}?token=${token}</p>
+                                    <a href="#">${process.env.ADMIN_APP_ORIGIN_URL}?token=${token}</p>
                                 </div>
                                 `
                     }
