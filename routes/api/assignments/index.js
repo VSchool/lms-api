@@ -30,11 +30,52 @@ assignmentsRouter.route("/")
             } else if (type === "code") {
                 newAssignment = new CodingAssignmentsModel(req.body);
             } else {
-                return res.status(403).send({message: "no matching query 'type' was found"})
+                return res.status(403).send({ message: "no matching query 'type' was found" })
             }
             newAssignment.save((err, savedAssignment) => {
                 if (err) return res.send(err);
                 res.status(201).send(savedAssignment);
+            })
+        } else {
+            res.status(401).send({ message: "Admin authorization required" })
+        }
+    });
+assignmentsRouter.route("/:id")
+    .get((req, res) => {
+        if (req.user.permissions.admin) {
+            AssignmentsModel.findById(req.params.id, (err, assignment) => {
+                if (err) return res.status(500).send(err);
+                if (!assignment) return res.status(404).send({ message: "Assignment not found" });
+                res.status(200).send(assignment);
+            })
+        } else {
+            AssignmentsModel.findOne({ _id: req.params.id, assignedTo: req.user.id }, (err, assignment) => {
+                if (err) return res.status(500).send(err);
+                if (!assignment) return res.status(404).send({ message: "Assignment not found" });
+                res.status(200).send(assignment);
+            })
+        }
+    })
+    .put((req, res) => {
+        if (req.user.permissions.admin) {
+            AssignmentsModel.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, assignment) => {
+                if (err) return res.status(500).send(err);
+                if (!assignment) return res.status(404).send({ message: "Assignment not found" });
+                res.status(200).send(assignment);
+            })
+        } else {
+            AssignmentsModel.findOneAndUpdate({ _id: req.params.id, assignedTo: req.user.id }, req.body, { new: true }, (err, assignment) => {
+                if (err) return res.status(500).send(err);
+                if (!assignment) return res.status(404).send({ message: "Assignment not found" });
+                res.status(200).send(assignment);
+            })
+        }
+    })
+    .delete((req, res) => {
+        if (req.permissions.admin) {
+            AssignmentsModel.findByIdAndRemove(req.params.id, (err, assignment) => {
+                if (err) res.status(500).send(err);
+                res.status(204).send();
             })
         } else {
             res.status(401).send({ message: "Admin authorization required" })
