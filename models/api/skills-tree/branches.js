@@ -21,4 +21,6 @@ const branchLevelSchema = new Schema({
     }
 });
 
-const BranchLevelModel = mongoose.model("BranchLevels", branchLevelSchema);
+const BranchLevelModel = mongoose.model("BranchLevel", branchLevelSchema);
+
+module.exports = BranchLevelModel;

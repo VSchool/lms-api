@@ -21,6 +21,10 @@ const assignmentSchema = new Schema({
         ref: "Days",
         required: true
     },
+    branchLevels: [{
+        type: Schema.Types.ObjectId,
+        ref: "BranchLevel",
+    }],
     assignedTo: {
         type: Schema.Types.ObjectId,
         ref: "Users",

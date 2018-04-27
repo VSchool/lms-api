@@ -7,5 +7,7 @@ apiRouter.use(expressJwt({ secret: process.env.SECRET }));
 apiRouter.use("/cohorts", require("./cohorts.js"));
 apiRouter.use("/days", require("./days.js"));
 apiRouter.use("/assignments", require("./assignments/"));
+apiRouter.use("/skills-tree", require("./skills-tree/"));
+apiRouter.use("/branches", require("./skills-tree/branches.js"));
 
 module.exports = apiRouter;

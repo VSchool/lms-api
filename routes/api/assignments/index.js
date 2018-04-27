@@ -27,15 +27,17 @@ assignmentsRouter.route("/")
             let newAssignment;
             if (type === "quiz") {
                 newAssignment = new QuizModel(req.body);
-            } else {
+            } else if (type === "coding") {
                 newAssignment = new CodingAssignmentsModel(req.body);
+            } else {
+                return res.status(403).send({message: "no matching query 'type' was found"})
             }
             newAssignment.save((err, savedAssignment) => {
                 if (err) return res.send(err);
                 res.status(201).send(savedAssignment);
             })
         } else {
-            res.status(401).send({message: "Admin authorization required"})
+            res.status(401).send({ message: "Admin authorization required" })
         }
     })
 

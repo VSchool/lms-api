@@ -33,9 +33,12 @@ const InSessionDay = DayModel.discriminator("InSessionDay", new Schema({
     },
     attended: {
         type: Boolean,
-        default: false
+        default: true
     },
-    
+    tardy: {
+        type: Boolean,
+        default: false
+    }
 }, options));
 
 module.exports = {
