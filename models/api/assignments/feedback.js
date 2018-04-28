@@ -14,6 +14,11 @@ const feedbackSchema = new Schema({
         ref: "Assignments",
         required: true,
     },
+    student: {
+        type: Schema.Types.ObjectId,
+        ref: "Users",
+        required: true 
+    },
     comment: {
         type: String,
         required: true
