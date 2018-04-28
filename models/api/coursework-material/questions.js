@@ -4,16 +4,15 @@ const { Schema } = mongoose;
 const options = { discriminatorKey: "kind" }
 
 const questionSchema = new Schema({
-    assignment: {
+    courseMaterial: {
         type: Schema.Types.ObjectId,
-        ref: "Assignments",
+        ref: "CourseMaterial",
         required: true,
     },
     question: {
         type: String,
         required: true
     },
-    //FOR LINKS TO IMAGES, SITES, ETC
     href:{
         type: String,
     }
@@ -30,10 +29,6 @@ const MultChoiceQuestionModel = QuestionModel.discriminator("MultChoiceQuestions
         type: Number,
         required: true
     },
-    answerProvided: {
-        type: Number,
-        default: null
-    }
 }, options));
 
 const TextQuestionModel = QuestionModel.discriminator("TextQuestions", new Schema({
@@ -41,10 +36,6 @@ const TextQuestionModel = QuestionModel.discriminator("TextQuestions", new Schem
         type: String,
         required: true
     },
-    answerProvided: {
-        type: String,
-        default: null
-    }
 }, options))
 
 module.exports = {
