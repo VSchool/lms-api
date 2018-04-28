@@ -1,4 +1,9 @@
 const mongoose = require("mongoose");
+
+// imports
+const { FeedbackModel } = require("./feedback.js")
+const { QuestionModel } = require("./questions.js")
+
 const { Schema } = mongoose;
 
 const options = { discriminatorKey: "kind" }
@@ -30,6 +35,11 @@ const assignmentSchema = new Schema({
         ref: "Users",
         required: true
     },
+    cohortId: {
+        type: Schema.Types.ObjectId,
+        ref: "Cohorts",
+        required: true
+    },
     status: {
         type: String,
         enum: ["assigned", "unassigned", "submitted", "passed", "failed"],
@@ -42,6 +52,10 @@ const assignmentSchema = new Schema({
         enum: ["project", "exercise", "interview", "quiz"]
     }
 }, options);
+
+assignmentSchema.post("deleteMany", (err, docs) => {
+    console.log("docs");
+})
 
 const AssignmentsModel = mongoose.model("Assignments", assignmentSchema);
 

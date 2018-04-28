@@ -22,7 +22,7 @@ feedbackRouter.route("/")
         if (req.user.permissions.admin) {
             AssignmentsModel.findById(assignmentId, (err, foundAssignment) => {
                 if (err) return res.send(err);
-                if (!assignment) return res.status(404).send({ message: "Assignment not found" })
+                if (!foundAssignment) return res.status(404).send({ message: "Assignment not found" })
                 let newFeedback;
                 const body = { ...req.body, assignment: assignmentId, instructor: req.user.id }
                 switch (foundAssignment.kind) {

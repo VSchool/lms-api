@@ -1,6 +1,8 @@
 const express = require("express");
 
 const { AssignmentsModel, CodingAssignmentsModel, QuizModel } = require("../../../models/api/assignments/");
+const { QuestionModel } = require("../../../models/api/assignments/questions.js");
+const { FeedbackModel } = require("../../../models/api/assignments/feedback.js");
 
 const assignmentsRouter = express.Router();
 assignmentsRouter.use("/:assignmentId/feedback", require("./feedback.js"));
@@ -39,7 +41,26 @@ assignmentsRouter.route("/")
         } else {
             res.status(401).send({ message: "Admin authorization required" })
         }
-    });
+    })
+    .delete((req, res) => {
+        if (req.user.permissions.admin) {
+            AssignmentsModel.find(req.query)
+                .exec((err, assignments) => {
+                    if (err) return res.status(500).send(err);
+                    if (!assignments) return res.status(404).send({ message: "No assignments found" })
+                    assignments.forEach(assignment => {
+                        const query = { assignment: assignment._id };
+                        FeedbackModel.deleteMany(query, err => err ? res.status(500).send(err) : null);
+                        QuestionModel.deleteMany(query, err => err ? res.status(500).send(err) : null);
+                        assignment.remove(err => err ? res.status(500).send(err) : null);
+                    });
+                    res.status(204).send();
+                });
+        } else {
+            res.status(401).send({ message: "Admin authorization required" })
+        }
+    })
+
 assignmentsRouter.route("/:id")
     .get((req, res) => {
         if (req.user.permissions.admin) {
@@ -69,16 +90,6 @@ assignmentsRouter.route("/:id")
                 if (!assignment) return res.status(404).send({ message: "Assignment not found" });
                 res.status(200).send(assignment);
             })
-        }
-    })
-    .delete((req, res) => {
-        if (req.permissions.admin) {
-            AssignmentsModel.findByIdAndRemove(req.params.id, (err, assignment) => {
-                if (err) res.status(500).send(err);
-                res.status(204).send();
-            })
-        } else {
-            res.status(401).send({ message: "Admin authorization required" })
         }
     })
 
