@@ -4,7 +4,7 @@ const CourseMaterialModel = require("../../../models/api/coursework-material/");
 
 const courseMaterialRouter = express.Router();
 
-// courseMaterialRouter.use("/:courseMatId/questions", require("./questions.js"));
+courseMaterialRouter.use("/:courseMatId/questions", require("./questions.js"));
 
 courseMaterialRouter.route("/")
     .get((req, res) => {
