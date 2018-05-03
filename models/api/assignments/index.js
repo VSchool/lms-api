@@ -25,7 +25,7 @@ const assignmentSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ["assigned", "unassigned", "submitted", "passed", "failed"],
+        enum: ["assigned", "unassigned", "submitted", "passed", "failed", "redo"],
         default: "unassigned",
         required: true
     },
@@ -33,4 +33,4 @@ const assignmentSchema = new Schema({
 
 const AssignmentsModel = mongoose.model("Assignments", assignmentSchema);
 
-module.exports = AssignmentsModel
+module.exports = AssignmentsModel;
