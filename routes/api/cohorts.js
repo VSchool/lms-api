@@ -4,7 +4,7 @@ const Cohort = require("../../models/api/cohorts");
 
 cohortRouter.route("/")
     .get((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             Cohort.find(req.query, (err, cohorts) => {
                 if (err) return res.send(err);
                 res.status(200).send(cohorts);
@@ -14,7 +14,7 @@ cohortRouter.route("/")
         }
     })
     .post((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             const newCohort = new Cohort(req.body);
             newCohort.save((err, savedCohort) => {
                 if (err) return res.send(err);
@@ -33,7 +33,7 @@ cohortRouter.route("/:id")
         });
     })
     .put((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             Cohort.findByIdAndUpdate(req.params.id, req.body, {new: true}, (err, cohort) => {
                 if (err) return res.status(500).send(err);
                 res.status(200).send(cohort);
@@ -43,7 +43,7 @@ cohortRouter.route("/:id")
         }
     })
     .delete((req, res) => {
-        if (req.user.permissions.rootAccess) {
+        if (req.user.permissions && req.user.permissions.rootAccess) {
             Cohort.findByIdAndRemove(req.params.id, (err, cohort) => {
                 if (err) return res.status(500).send(err);
                 res.status(204).send();

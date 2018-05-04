@@ -18,7 +18,7 @@ feedbackRouter.route("/")
     })
     .post((req, res) => {
         const { assignmentId } = req.params;
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             AssignmentsModel.findById(assignmentId, (err, foundAssignment) => {
                 if (err) return res.send(err);
                 if (!foundAssignment) return res.status(404).send({ message: "Assignment not found" })
@@ -44,7 +44,7 @@ feedbackRouter.route("/")
         }
     })
     .delete((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             const { assignmentId } = req.params;
             FeedbackModel.deleteMany({ ...req.query, assignment: assignmentId }, (err) => {
                 if (err) return res.status(500).send(err);
@@ -63,7 +63,7 @@ feedbackRouter.route("/:feedbackId")
         });
     })
     .delete((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             FeedbackModel.findByIdAndRemove(req.params.feedbackId, (err, feedback) => {
                 if (err) return res.status(500).send(err);
                 if (!feedback) return res.status(404).send({ message: "Feedback not found" });
@@ -74,7 +74,7 @@ feedbackRouter.route("/:feedbackId")
         }
     })
     .put((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             const { assignmentId, feedbackId } = req.params;
             FeedbackModel.findOneAndUpdate({ assignment: assignmentId, _id: feedbackId }, req.body, { new: true }, (err, feedback) => {
                 if (err) return res.status(500).send(err);

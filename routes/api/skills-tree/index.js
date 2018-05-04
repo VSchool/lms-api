@@ -4,7 +4,7 @@ const SkillsTree = require("../../../models/api/skills-tree/");
 
 skillsTreeRouter.route("/")
     .get((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             SkillsTree.find(req.query, (err, foundTree) => {
                 if (err) return res.send(err);
                 res.status(200).send(foundTree);
@@ -14,7 +14,7 @@ skillsTreeRouter.route("/")
         }
     })
     .post((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             res.status(403).send({message: "User must be a student"});
         } else {
             const body = {student: req.user.id}
@@ -27,7 +27,7 @@ skillsTreeRouter.route("/")
     });
 skillsTreeRouter.route("/:id")
     .get((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             SkillsTree.findById(req.params.id, (err, foundTree) => {
                 if (err) return res.send(err);
                 res.status(200).send(foundTree);
@@ -41,7 +41,7 @@ skillsTreeRouter.route("/:id")
     });
 skillsTreeRouter.route("/:id/add-skills")
     .post((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             res.status(403).send({message: "Must be student user"});
         } else {
             SkillsTree.findOne({_id: req.params.id, student: req.user.id}, (err, tree) => {

@@ -76,7 +76,7 @@ questionRouter.route("/:qId")
     })
     .put((req, res) => {
         const { courseMatId, qId } = req.params;
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             QuestionModel.findOneAndUpdate({ _id: qId, courseMaterial: courseMatId }, req.body, { new: true }, (err, q) => {
                 if (err) return res.status(500).send(err);
                 if (!q) return res.status(404).send({ message: "Question not found" });
