@@ -1,25 +1,25 @@
 const mongoose = require("mongoose");
-
-const { Schema } = mongoose;
+const {Schema} = mongoose;
+const {ObjectId} = Schema.Types;
 
 const assignmentSchema = new Schema({
     dateAssigned: {
-        type: Schema.Types.ObjectId,
+        type: ObjectId,
         ref: "Days",
         required: true
     },
     courseMaterial: {
-        type: Schema.Types.ObjectId,
+        type: ObjectId,
         ref: "CourseMaterial",
         required: true
     },
     assignedTo: {
-        type: Schema.Types.ObjectId,
+        type: ObjectId,
         ref: "Users",
         required: true
     },
     cohortId: {
-        type: Schema.Types.ObjectId,
+        type: ObjectId,
         ref: "Cohorts",
         required: true
     },
@@ -31,6 +31,4 @@ const assignmentSchema = new Schema({
     },
 });
 
-const AssignmentsModel = mongoose.model("Assignments", assignmentSchema);
-
-module.exports = AssignmentsModel
+module.exports = mongoose.model("Assignment", assignmentSchema);

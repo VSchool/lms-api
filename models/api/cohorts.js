@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const {Schema} = mongoose;
 
 const CohortSchema = new Schema({
     startingMonth: {
         type: String,
         required: true,
-        enum: ["January", "February", "March", "April", "May", "June", "July", "Auguset", "September", "October", "November", "December"]
+        enum: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     },
     startingDate: {
         type: Date,
@@ -29,7 +29,6 @@ const CohortSchema = new Schema({
         required: true,
         enum: ["PT", "FT"]
     }
-}, { timestamps: true });
+}, {timestamps: true});
 
-const CohortModel = mongoose.model("Cohorts", CohortSchema);
-module.exports = CohortModel;
+module.exports = mongoose.model("Cohorts", CohortSchema);

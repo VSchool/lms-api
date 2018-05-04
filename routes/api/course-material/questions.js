@@ -20,7 +20,7 @@ questionRouter.route("/")
     .post((req, res) => {
         const { courseMatId } = req.params;
         const { type } = req.query;
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             let newQ;
             const body = { courseMaterial: courseMatId, ...req.body };
             switch (type) {
@@ -43,7 +43,7 @@ questionRouter.route("/")
     })
     .delete((req, res) => {
         const { courseMatId } = req.params;
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             QuestionModel.deleteMany({ ...req.query, courseMaterial: courseMatId }, (err) => {
                 if (err) return res.status(500).send(err);
                 res.status(204).send();
@@ -64,7 +64,7 @@ questionRouter.route("/:qId")
     })
     .delete((req, res) => {
         const { courseMatId, qId } = req.params;
-        if (req.user.permissions.admin) {
+        if (req.user.permissions && req.user.permissions.admin) {
             QuestionModel.deleteOne({ _id: qId, courseMaterial: courseMatId }, (err) => {
                 if (err) return res.status(500).send(err);
                 if (!q) return res.status(404).send({ message: "Question not found" });
