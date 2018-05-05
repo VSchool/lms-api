@@ -1,9 +1,9 @@
 const express = require("express");
 
 const {
-    QuestionModel,
-    MultChoiceQuestionModel,
-    TextQuestionModel
+    Question,
+    MultChoiceQuestion,
+    TextQuestion
 } = require("../../../models/api/coursework-material/questions.js");
 
 const questionRouter = express.Router({ mergeParams: true });
@@ -12,7 +12,7 @@ const questionRouter = express.Router({ mergeParams: true });
 questionRouter.route("/")
     .get((req, res) => {
         const { courseMatId } = req.params;
-        QuestionModel.find({ ...req.query, courseMaterial: courseMatId }, (err, qs) => {
+        Question.find({ ...req.query, courseMaterial: courseMatId }, (err, qs) => {
             if (err) return res.status(500).send(err);
             res.status(200).send(qs);
         });
@@ -25,10 +25,10 @@ questionRouter.route("/")
             const body = { courseMaterial: courseMatId, ...req.body };
             switch (type) {
                 case "mult":
-                    newQ = new MultChoiceQuestionModel(body);
+                    newQ = new MultChoiceQuestion(body);
                     break
                 case "text":
-                    newQ = new TextQuestionModel(body);
+                    newQ = new TextQuestion(body);
                     break;
                 default:
                     return res.status(403).send({ message: "Query 'type' must be provided" })
@@ -44,7 +44,7 @@ questionRouter.route("/")
     .delete((req, res) => {
         const { courseMatId } = req.params;
         if (req.user.admin) {
-            QuestionModel.deleteMany({ ...req.query, courseMaterial: courseMatId }, (err) => {
+            Question.deleteMany({ ...req.query, courseMaterial: courseMatId }, (err) => {
                 if (err) return res.status(500).send(err);
                 res.status(204).send();
             })
@@ -56,7 +56,7 @@ questionRouter.route("/")
 questionRouter.route("/:qId")
     .get((req, res) => {
         const { courseMatId, qId } = req.params;
-        QuestionModel.findOne({ _id: qId, courseMaterial: courseMatId }, (err, q) => {
+        Question.findOne({ _id: qId, courseMaterial: courseMatId }, (err, q) => {
             if (err) return res.status(500).send(err);
             if (!q) return res.status(404).send({ message: "Question not found" })
             res.status(200).send(q);
@@ -65,7 +65,7 @@ questionRouter.route("/:qId")
     .delete((req, res) => {
         const { courseMatId, qId } = req.params;
         if (req.user.admin) {
-            QuestionModel.deleteOne({ _id: qId, courseMaterial: courseMatId }, (err) => {
+            Question.deleteOne({ _id: qId, courseMaterial: courseMatId }, (err) => {
                 if (err) return res.status(500).send(err);
                 if (!q) return res.status(404).send({ message: "Question not found" });
                 res.status(204).send();
@@ -77,7 +77,7 @@ questionRouter.route("/:qId")
     .put((req, res) => {
         const { courseMatId, qId } = req.params;
         if (req.user.admin) {
-            QuestionModel.findOneAndUpdate({ _id: qId, courseMaterial: courseMatId }, req.body, { new: true }, (err, q) => {
+            Question.findOneAndUpdate({ _id: qId, courseMaterial: courseMatId }, req.body, { new: true }, (err, q) => {
                 if (err) return res.status(500).send(err);
                 if (!q) return res.status(404).send({ message: "Question not found" });
                 res.status(200).send(q);

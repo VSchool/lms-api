@@ -1,6 +1,6 @@
 const express = require("express");
 
-const CourseMaterialModel = require("../../../models/api/coursework-material/");
+const CourseMaterial = require("../../../models/api/coursework-material/");
 
 const courseMaterialRouter = express.Router();
 
@@ -8,14 +8,14 @@ courseMaterialRouter.use("/:courseMatId/questions", require("./questions.js"));
 
 courseMaterialRouter.route("/")
     .get((req, res) => {
-        CourseMaterialModel.find(req.query, (err, material) => {
+        CourseMaterial.find(req.query, (err, material) => {
             if (err) return res.status(500).send(err);
             res.status(200).send(material);
         })
     })
     .post((req, res) => {
         if (req.user.admin) {
-            const newMaterial = new CourseMaterialModel(req.body);
+            const newMaterial = new CourseMaterial(req.body);
             newMaterial.save((err, material) => {
                 if (err) return res.status(500).send(err);
                 res.status(201).send(material);
@@ -26,7 +26,7 @@ courseMaterialRouter.route("/")
     })
     .delete((req, res) => {
         if (req.user.admin) {
-            CourseMaterialModel.deleteMany(req.query, (err) => {
+            CourseMaterial.deleteMany(req.query, (err) => {
                 if (err) return res.status(500).send(err);
                 res.status(204).send();
             })
@@ -37,7 +37,7 @@ courseMaterialRouter.route("/")
 
 courseMaterialRouter.route("/:id")
     .get((req, res) => {
-        CourseMaterialModel.findById(req.params.id, (err, materials) => {
+        CourseMaterial.findById(req.params.id, (err, materials) => {
             if (err) return res.status(500).send(err);
             if (!materials) return res.status(404).send({ message: "Material not found" })
             res.status(200).send(materials);
@@ -45,7 +45,7 @@ courseMaterialRouter.route("/:id")
     })
     .put((req, res) => {
         if (req.user.admin) {
-            CourseMaterialModel.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, updatedMat) => {
+            CourseMaterial.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, updatedMat) => {
                 if (err) return res.status(500).send(err);
                 if (!updatedMat) return res.status(404).send({ message: "Material not found" });
                 res.status(200).send(updatedMat);
@@ -56,7 +56,7 @@ courseMaterialRouter.route("/:id")
     })
     .delete((req, res) => {
         if (req.user.admin) {
-            CourseMaterialModel.findByIdAndRemove(req.params.id, (err) => {
+            CourseMaterial.findByIdAndRemove(req.params.id, (err) => {
                 if (err) return res.status(500).send(err);
                 res.status(204).send();
             })

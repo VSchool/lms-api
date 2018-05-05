@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const {Schema} = mongoose;
-const {ObjectId} = Schema.Types;
+const { Schema } = mongoose;
+const { ObjectId } = Schema.Types;
 
-const options = {discriminatorKey: "kind"}
+const options = { discriminatorKey: "kind" }
 
 const questionSchema = new Schema({
     courseMaterial: {
@@ -17,9 +17,9 @@ const questionSchema = new Schema({
     href: String,
 }, options);
 
-const QuestionModel = mongoose.model("Question", questionSchema);
+const Question = mongoose.model("Question", questionSchema);
 
-const MultChoiceQuestionModel = QuestionModel.discriminator("MultChoiceQuestion", new Schema({
+const MultChoiceQuestion = Question.discriminator("MultChoiceQuestion", new Schema({
     options: [{
         type: String,
         required: true
@@ -30,7 +30,7 @@ const MultChoiceQuestionModel = QuestionModel.discriminator("MultChoiceQuestion"
     },
 }, options));
 
-const TextQuestionModel = QuestionModel.discriminator("TextQuestion", new Schema({
+const TextQuestion = Question.discriminator("TextQuestion", new Schema({
     answerText: {
         type: String,
         required: true
@@ -38,7 +38,7 @@ const TextQuestionModel = QuestionModel.discriminator("TextQuestion", new Schema
 }, options))
 
 module.exports = {
-    QuestionModel,
-    MultChoiceQuestionModel,
-    TextQuestionModel
+    Question,
+    MultChoiceQuestion,
+    TextQuestion
 }
