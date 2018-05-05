@@ -2,35 +2,42 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const { Schema } = mongoose;
+const { ObjectId } = Schema.Types;
+
 const options = { discriminatorKey: "kind" };
 
 const userSchema = new Schema({
     email: {
+        type: String,
         unique: true,
         required: true,
-        type: String
+        lowercase: true
     },
     password: {
-        required: true,
-        type: String
+        type: String,
+        required: true
     },
     avatar: {
         type: String,
         default: ""
     },
     name: {
-        f: {
-            required: true,
-            type: String
+        first: {
+            type: String,
+            required: true
         },
-        l: {
-            required: true,
-            type: String
+        last: {
+            type: String,
+            required: true
         }
-    },
-
-
+    }
 }, options);
+
+// Create a virtual fullName property (doesn't get saved to
+// DB but is part of the object that comes back from the DB)
+userSchema.virtual("fullName").get(function () {
+    return `${this.name.first} ${this.name.last}`;
+});
 
 userSchema.pre("save", function (next) {
     bcrypt.hash(this.password, 10, (err, hash) => {
@@ -39,36 +46,33 @@ userSchema.pre("save", function (next) {
         next();
     });
 });
+
 userSchema.methods.secure = function () {
-    const user = this.toObject();
+    // Include virtuals (fullName) in the created object
+    const user = this.toObject({ virtuals: true });
     //remove sensitive info from user object before sending it back to client
     delete user.password;
     delete user.permissions;
+    delete user.id;
     return user;
 }
 userSchema.methods.auth = function (pwdAttempt, cb) {
     bcrypt.compare(pwdAttempt, this.password, cb);
 }
 
-const UserModel = mongoose.model("Users", userSchema);
+const UserModel = mongoose.model("User", userSchema);
 
 const AdminUserModel = UserModel.discriminator("AdminUser", new Schema({
-    permissions: {
-        admin: {
-            default: true,
-            type: Boolean
-        },
-        rootAccess: {
-            default: false,
-            type: Boolean
-        }
-    }
+    admin: {
+        type: Boolean,
+        default: true
+    },
 }, options));
 
 const StudentUserModel = UserModel.discriminator("StudentUser", new Schema({
     cohortId: {
+        type: ObjectId,
         required: true,
-        type: mongoose.Schema.Types.ObjectId,
         ref: "Cohorts"
     },
     passed: {

@@ -9,37 +9,21 @@ const { AdminUserModel } = require("../../models/users.js");
 
 const adminAuthRouter = express.Router();
 
-adminAuthRouter.use(["/authorize", "/signup"], expressJwt({ secret: process.env.SECRET }));
+adminAuthRouter.use(["/authorize", /* "/signup" */], expressJwt({ secret: process.env.SECRET }));
 
-//ROOT SIGN UP FOR DEV ONLY
-// adminAuthRouter.route("/root-signup")
-//     .post((req, res) => {
-//         AdminUserModel.findOne({ email: req.body.email }, (err, foundUser) => {
-//             if (err) return res.send(err);
-//             if (foundUser) return res.status(401).send({ success: false, message: "User already exists" });
-//             const admin = new AdminUserModel(req.body);
-//             admin.save((err, user) => {
-//                 if (err) return res.send(err);
-//                 const token = jwt.sign({
-//                     id: user._id,
-//                     permissions: user.permissions
-//                 }, config.SECRET, { expiresIn: 1000 * 60 * 60 });
-//                 res.status(201).send({ success: true, token, user: user.secure() });
-//             })
-//         })
-//     });
+//ROOT SIGN UP
 adminAuthRouter.route("/signup")
     .post((req, res) => {
-        if (!req.user.email) return res.status(403).send({ message: "User not authorized to be an admin" });
-        AdminUserModel.findOne({ email: req.user.email }, (err, foundUser) => {
+        // if (!req.user.email) return res.status(403).send({ message: "User not authorized to be an admin" });
+        AdminUserModel.findOne({ email: req.body.email }, (err, foundUser) => {
             if (err) return res.send(err);
             if (foundUser) return res.status(403).send({ message: "User already exists" });
-            const admin = new AdminUserModel({ ...req.body, ...req.user });
+            const admin = new AdminUserModel(req.body);
             admin.save((err, user) => {
                 if (err) return res.send(err);
                 const token = jwt.sign({
                     id: user._id,
-                    permissions: user.permissions
+                    admin: user.admin
                 }, process.env.SECRET, { expiresIn: 1000 * 60 * 60 });
                 res.status(201).send({ token, user: user.secure() });
             })
@@ -55,7 +39,7 @@ adminAuthRouter.route("/login")
                 if (isAuthorized) {
                     const token = jwt.sign({
                         id: user._id,
-                        permissions: user.permissions
+                        admin: user.admin
                     }, process.env.SECRET, { expiresIn: 1000 * 60 * 60 });
                     res.status(201).send({ token, user: user.secure() });
                 } else {
@@ -69,7 +53,7 @@ adminAuthRouter.route("/login")
 adminAuthRouter.route("/authorize/invite-admin")
     .post((req, res) => {
         const { email, name } = req.body;
-        if (req.user.permissions.rootAccess) {
+        if (req.user.admin) {
             AdminUserModel.findOne({ email }, (err, foundUser) => {
                 if (err) return res.send(err);
                 if (foundUser) return res.status(403).send({ message: "User already exists" });
@@ -104,25 +88,6 @@ adminAuthRouter.route("/authorize/invite-admin")
             });
         } else {
             res.status(403).send({ message: "Admin access denied" });
-        }
-    });
-
-// GIVE ADMIN ROOT ACCESS
-adminAuthRouter.route("/authorize/allow-root/:id")
-    .post((req, res) => {
-        if (req.user.permissions.rootAccess) {
-            AdminUserModel.findById(req.params.id, (err, admin) => {
-                if (err) return res.send(err);
-                if (!admin) return res.status(404).send({ message: "User not found" });
-                if (admin.permissions.rootAccess) return res.status(403).send({ message: "Admin already has root access" });
-                if (!admin.permissions.admin) return res.status(403).send({ message: "User is not an admin" })
-                admin.update({ $set: { "permissions.rootAccess": true } }, { new: true }, (err, ok) => {
-                    if (err) return res.send(err);
-                    res.status(200).send(admin.secure());
-                })
-            })
-        } else {
-            res.status(403).send({ message: "Root access denied" })
         }
     });
 

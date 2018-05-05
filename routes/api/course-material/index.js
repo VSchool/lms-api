@@ -14,7 +14,7 @@ courseMaterialRouter.route("/")
         })
     })
     .post((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.admin) {
             const newMaterial = new CourseMaterialModel(req.body);
             newMaterial.save((err, material) => {
                 if (err) return res.status(500).send(err);
@@ -25,7 +25,7 @@ courseMaterialRouter.route("/")
         }
     })
     .delete((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.admin) {
             CourseMaterialModel.deleteMany(req.query, (err) => {
                 if (err) return res.status(500).send(err);
                 res.status(204).send();
@@ -44,7 +44,7 @@ courseMaterialRouter.route("/:id")
         })
     })
     .put((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.admin) {
             CourseMaterialModel.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, updatedMat) => {
                 if (err) return res.status(500).send(err);
                 if (!updatedMat) return res.status(404).send({ message: "Material not found" });
@@ -55,7 +55,7 @@ courseMaterialRouter.route("/:id")
         }
     })
     .delete((req, res) => {
-        if (req.user.permissions.admin) {
+        if (req.user.admin) {
             CourseMaterialModel.findByIdAndRemove(req.params.id, (err) => {
                 if (err) return res.status(500).send(err);
                 res.status(204).send();
