@@ -5,7 +5,7 @@ const {ObjectId} = Schema.Types;
 const assignmentSchema = new Schema({
     dateAssigned: {
         type: ObjectId,
-        ref: "Days",
+        ref: "Day",
         required: true
     },
     courseMaterial: {
@@ -15,12 +15,12 @@ const assignmentSchema = new Schema({
     },
     assignedTo: {
         type: ObjectId,
-        ref: "Users",
+        ref: "User",
         required: true
     },
     cohortId: {
         type: ObjectId,
-        ref: "Cohorts",
+        ref: "Cohort",
         required: true
     },
     status: {

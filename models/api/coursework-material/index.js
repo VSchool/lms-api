@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const {Schema} = mongoose;
-const {ObjectId} = Schema.Types;
+const { Schema } = mongoose;
+const { ObjectId } = Schema.Types;
 
 const courseMaterialSchema = new Schema({
     name: {
@@ -17,6 +17,10 @@ const courseMaterialSchema = new Schema({
         type: ObjectId,
         ref: "BranchLevel",
     }],
+    daySequence: {
+        type: Number,
+        required: true
+    },
     assignmentType: {
         type: String,
         required: true,

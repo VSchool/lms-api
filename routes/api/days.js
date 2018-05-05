@@ -1,7 +1,7 @@
 const express = require("express");
 const dayRouter = express.Router();
 
-const {Day, InSessionDay} = require("../../models/api/days");
+const { Day, InSessionDay } = require("../../models/api/days");
 
 dayRouter.route("/")
     .get((req, res) => {
@@ -11,7 +11,7 @@ dayRouter.route("/")
         });
     })
     .post((req, res) => {
-        const {inSession} = req.query;
+        const { inSession } = req.query;
         let newDay;
         if (inSession)
             newDay = new InSessionDay(req.body);

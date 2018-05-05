@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const {Schema} = mongoose;
-const {ObjectId} = Schema.Types;
+const { Schema } = mongoose;
+const { ObjectId } = Schema.Types;
 
-const options = {discriminatorKey: "kind", timestamps: true};
+const options = { discriminatorKey: "kind", timestamps: true };
 
 const DaySchema = new Schema({
     cohort: {
@@ -22,7 +22,7 @@ const DaySchema = new Schema({
     label: String
 }, options);
 
-const DayModel = mongoose.model("Days", DaySchema);
+const DayModel = mongoose.model("Day", DaySchema);
 
 const InSessionDay = DayModel.discriminator("InSessionDay", new Schema({
     sequence: {
