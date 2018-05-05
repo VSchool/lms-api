@@ -1,21 +1,20 @@
 const mongoose = require("mongoose");
 
-const { Schema } = mongoose;
+const {Schema} = mongoose;
+const {ObjectId} = Schema.Types;
 
 const courseMaterialSchema = new Schema({
     name: {
         type: String,
         required: true
     },
-    tags: [{
-        type: String
-    }],
+    tags: [String],
     courseworkUrl: {
         type: String,
         required: true
     },
     branchLevels: [{
-        type: Schema.Types.ObjectId,
+        type: ObjectId,
         ref: "BranchLevel",
     }],
     assignmentType: {
@@ -25,6 +24,4 @@ const courseMaterialSchema = new Schema({
     }
 });
 
-const CourseMaterialModel = mongoose.model("CourseMaterial", courseMaterialSchema);
-
-module.exports = CourseMaterialModel;
+module.exports = mongoose.model("CourseMaterial", courseMaterialSchema);

@@ -9,6 +9,6 @@ apiRouter.use("/days", require("./days.js"));
 //add assignments later
 apiRouter.use("/course-material", require("./course-material/"));
 apiRouter.use("/skills-tree", require("./skills-tree/"));
-apiRouter.use("/branches", require("./skills-tree/branches.js"));
+apiRouter.use("/branches", require("./skills-tree/branches"));
 
 module.exports = apiRouter;

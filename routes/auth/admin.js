@@ -69,7 +69,7 @@ adminAuthRouter.route("/login")
 adminAuthRouter.route("/authorize/invite-admin")
     .post((req, res) => {
         const { email, name } = req.body;
-        if (req.user.permissions.rootAccess) {
+        if (req.user.permissions && req.user.permissions.rootAccess) {
             AdminUserModel.findOne({ email }, (err, foundUser) => {
                 if (err) return res.send(err);
                 if (foundUser) return res.status(403).send({ message: "User already exists" });
@@ -110,7 +110,7 @@ adminAuthRouter.route("/authorize/invite-admin")
 // GIVE ADMIN ROOT ACCESS
 adminAuthRouter.route("/authorize/allow-root/:id")
     .post((req, res) => {
-        if (req.user.permissions.rootAccess) {
+        if (req.user.permissions && req.user.permissions.rootAccess) {
             AdminUserModel.findById(req.params.id, (err, admin) => {
                 if (err) return res.send(err);
                 if (!admin) return res.status(404).send({ message: "User not found" });

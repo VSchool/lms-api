@@ -1,23 +1,24 @@
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const {Schema} = mongoose;
+const {ObjectId} = Schema.Types;
 
-const options = { discriminatorKey: "kind" };
+const options = {discriminatorKey: "kind"};
 
 const feedbackSchema = new Schema({
     instructor: {
-        type: Schema.Types.ObjectId,
+        type: ObjectId,
         ref: "Users",
         required: true
     },
     assignment: {
-        type: Schema.Types.ObjectId,
+        type: ObjectId,
         ref: "Assignments",
         required: true,
     },
     student: {
-        type: Schema.Types.ObjectId,
+        type: ObjectId,
         ref: "Users",
-        required: true 
+        required: true
     },
     comment: {
         type: String,

@@ -1,29 +1,30 @@
 const express = require("express");
 const branchLevelRouter = express.Router();
 
-const BranchLevelModel = require("../../../models/api/skills-tree/branches.js");
+const BranchLevel = require("../../../models/api/skills-tree/branches.js");
+
+// Middleware to check if user is admin. If no, reject.
+branchLevelRouter.use((req, res, next) => {
+    if (!req.user.permissions && !req.user.permissions.admin) {
+        return res.status(403).send({message: "Admin authorization required"})
+    }
+    next();
+});
 
 branchLevelRouter.route("/")
     .get((req, res) => {
-        if (req.user.permissions.admin) {
-            BranchLevelModel.find(req.query, (err, foundBranches) => {
-                if (err) return res.send(err);
-                res.status(200).send(foundBranches);
-            });
-        } else {
-            res.status(403).send({ message: "Admin authorization required" })
-        }
+        BranchLevel.find(req.query, (err, foundBranches) => {
+            if (err) return res.status(500).send(err);
+            res.status(200).send(foundBranches);
+        });
+
     })
     .post((req, res) => {
-        if (req.user.permissions.admin) {
-            const newBranch = new BranchLevelModel(req.body);
-            newBranch.save((err, savedBranch) => {
-                if (err) return res.send(err);
-                res.status(201).send(savedBranch);
-            })
-        } else {
-            res.status(403).send({ message: "Admin authorization required" })
-        }
-    })
+        const newBranch = new BranchLevel(req.body);
+        newBranch.save((err, savedBranch) => {
+            if (err) return res.status(500).send(err);
+            res.status(201).send(savedBranch);
+        });
+    });
 
 module.exports = branchLevelRouter;

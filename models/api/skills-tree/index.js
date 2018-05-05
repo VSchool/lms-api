@@ -1,19 +1,18 @@
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const {Schema} = mongoose;
+const {ObjectId} = Schema.Types;
 
 const skillsTreeSchema = new Schema({
     student: {
-        type: Schema.Types.ObjectId,
-        ref: "Users",
+        type: ObjectId,
+        ref: "User",
         required: true
     },
     levelsCompleted: [{
-        type: Schema.Types.ObjectId,
-        ref: "BranchLevels",
+        type: ObjectId,
+        ref: "BranchLevel",
         required: true
     }]
 });
 
-const SkillsTreeModel = mongoose.model("SkillsTrees", skillsTreeSchema);
-
-module.exports = SkillsTreeModel;
+module.exports = mongoose.model("SkillsTree", skillsTreeSchema);

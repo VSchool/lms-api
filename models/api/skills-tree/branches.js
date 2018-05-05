@@ -5,7 +5,7 @@ const branchLevelSchema = new Schema({
     name: {
         type: String,
         required: true,
-        enum: ["Static Websites", "Web Applications", "Programming Principles", "Version Control", "Database", "HTTP/API", "Troubleshooting/Debugging", "Project Management", "Deployment","Problem Solving", "Career Prep"]
+        enum: ["Static Websites", "Web Applications", "Programming Principles", "Version Control", "Database", "HTTP/API", "Troubleshooting/Debugging", "Project Management", "Deployment", "Problem Solving", "Career Prep"]
     },
     branchCode: {
         type: String,
@@ -21,6 +21,4 @@ const branchLevelSchema = new Schema({
     }
 });
 
-const BranchLevelModel = mongoose.model("BranchLevel", branchLevelSchema);
-
-module.exports = BranchLevelModel;
+module.exports = mongoose.model("BranchLevel", branchLevelSchema);
