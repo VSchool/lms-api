@@ -1,22 +1,20 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
+const { ObjectId, Mixed } = Schema.Types;
 
 const assignmentQSchema = new Schema({
     question: {
-        type: Schema.Types.ObjectId,
+        type: ObjectId,
         ref: "Questions",
         required: true
     },
     answerProvided: {
-        type: Schema.Types.Mixed,
+        type: Mixed,
     },
-    isCorrect: {
-        type: Boolean,
-        default: false
-    }
+    isCorrect: Boolean
 });
 
-const AssignmentQModel = new assignmentQSchema("AssignmentQ", assignmentQSchema);
+module.exports = mongoose.model("AssignmentQ", assignmentQSchema);
 
 
 

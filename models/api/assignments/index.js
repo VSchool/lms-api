@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const {Schema} = mongoose;
-const {ObjectId} = Schema.Types;
+const { Schema } = mongoose;
+const { ObjectId } = Schema.Types;
 
 const assignmentSchema = new Schema({
     dateAssigned: {
@@ -25,7 +25,7 @@ const assignmentSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ["assigned", "unassigned", "submitted", "passed", "failed", "redo"],
+        enum: ["assigned", "unassigned", "submitted", "passed", "failed"],
         default: "unassigned",
         required: true
     },

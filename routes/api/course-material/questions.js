@@ -4,7 +4,7 @@ const {
     Question,
     MultChoiceQuestion,
     TextQuestion
-} = require("../../../models/api/coursework-material/questions.js");
+} = require("../../../models/api/course-material/questions.js");
 
 const questionRouter = express.Router({ mergeParams: true });
 
