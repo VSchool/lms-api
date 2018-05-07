@@ -8,6 +8,11 @@ const assignmentQSchema = new Schema({
         ref: "Questions",
         required: true
     },
+    assignment: {
+        type: ObjectId,
+        ref: "Assignment",
+        required: true
+    },
     student: {
         type: ObjectId,
         ref: "User",

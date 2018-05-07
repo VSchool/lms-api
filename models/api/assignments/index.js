@@ -18,7 +18,7 @@ const assignmentSchema = new Schema({
         ref: "User",
         required: true
     },
-    cohortId: {
+    cohort: {
         type: ObjectId,
         ref: "Cohort",
         required: true
