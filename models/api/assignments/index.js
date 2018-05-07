@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
-const {Schema} = mongoose;
-const {ObjectId} = Schema.Types;
+const { Schema } = mongoose;
+const { ObjectId } = Schema.Types;
 
 const assignmentSchema = new Schema({
     dateAssigned: {
         type: ObjectId,
-        ref: "Days",
+        ref: "Day",
         required: true
     },
     courseMaterial: {
@@ -15,12 +15,12 @@ const assignmentSchema = new Schema({
     },
     assignedTo: {
         type: ObjectId,
-        ref: "Users",
+        ref: "User",
         required: true
     },
-    cohortId: {
+    cohort: {
         type: ObjectId,
-        ref: "Cohorts",
+        ref: "Cohort",
         required: true
     },
     status: {

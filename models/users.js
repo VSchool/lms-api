@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-const {Schema} = mongoose;
-const {ObjectId} = Schema.Types;
+const { Schema } = mongoose;
+const { ObjectId } = Schema.Types;
 
-const options = {discriminatorKey: "kind"};
+const options = { discriminatorKey: "kind" };
 
 const userSchema = new Schema({
     email: {
@@ -49,10 +49,11 @@ userSchema.pre("save", function (next) {
 
 userSchema.methods.secure = function () {
     // Include virtuals (fullName) in the created object
-    const user = this.toObject({virtuals: true});
+    const user = this.toObject({ virtuals: true });
     //remove sensitive info from user object before sending it back to client
     delete user.password;
     delete user.permissions;
+    delete user.id;
     return user;
 }
 userSchema.methods.auth = function (pwdAttempt, cb) {
@@ -62,16 +63,10 @@ userSchema.methods.auth = function (pwdAttempt, cb) {
 const UserModel = mongoose.model("User", userSchema);
 
 const AdminUserModel = UserModel.discriminator("AdminUser", new Schema({
-    permissions: {
-        admin: {
-            type: Boolean,
-            default: true
-        },
-        rootAccess: {
-            type: Boolean,
-            default: false
-        }
-    }
+    admin: {
+        type: Boolean,
+        default: true
+    },
 }, options));
 
 const StudentUserModel = UserModel.discriminator("StudentUser", new Schema({

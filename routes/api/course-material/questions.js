@@ -1,34 +1,30 @@
 const express = require("express");
 
 const {
-    QuestionModel,
-    MultChoiceQuestionModel,
-    TextQuestionModel
-} = require("../../../models/api/coursework-material/questions.js");
+    Question,
+    MultChoiceQuestion,
+    TextQuestion
+} = require("../../../models/api/course-material/questions.js");
 
-const questionRouter = express.Router({ mergeParams: true });
-
+const questionRouter = express.Router();
 
 questionRouter.route("/")
     .get((req, res) => {
-        const { courseMatId } = req.params;
-        QuestionModel.find({ ...req.query, courseMaterial: courseMatId }, (err, qs) => {
+        Question.find(req.query, (err, qs) => {
             if (err) return res.status(500).send(err);
             res.status(200).send(qs);
         });
     })
     .post((req, res) => {
-        const { courseMatId } = req.params;
         const { type } = req.query;
-        if (req.user.permissions && req.user.permissions.admin) {
+        if (req.user.admin) {
             let newQ;
-            const body = { courseMaterial: courseMatId, ...req.body };
             switch (type) {
                 case "mult":
-                    newQ = new MultChoiceQuestionModel(body);
+                    newQ = new MultChoiceQuestion(req.body);
                     break
                 case "text":
-                    newQ = new TextQuestionModel(body);
+                    newQ = new TextQuestion(req.body);
                     break;
                 default:
                     return res.status(403).send({ message: "Query 'type' must be provided" })
@@ -42,9 +38,8 @@ questionRouter.route("/")
         }
     })
     .delete((req, res) => {
-        const { courseMatId } = req.params;
-        if (req.user.permissions && req.user.permissions.admin) {
-            QuestionModel.deleteMany({ ...req.query, courseMaterial: courseMatId }, (err) => {
+        if (req.user.admin) {
+            Question.deleteMany(req.query, (err) => {
                 if (err) return res.status(500).send(err);
                 res.status(204).send();
             })
@@ -55,17 +50,17 @@ questionRouter.route("/")
 
 questionRouter.route("/:qId")
     .get((req, res) => {
-        const { courseMatId, qId } = req.params;
-        QuestionModel.findOne({ _id: qId, courseMaterial: courseMatId }, (err, q) => {
+        const { qId } = req.params;
+        Question.findOne({ _id: qId }, (err, q) => {
             if (err) return res.status(500).send(err);
             if (!q) return res.status(404).send({ message: "Question not found" })
             res.status(200).send(q);
         });
     })
     .delete((req, res) => {
-        const { courseMatId, qId } = req.params;
-        if (req.user.permissions && req.user.permissions.admin) {
-            QuestionModel.deleteOne({ _id: qId, courseMaterial: courseMatId }, (err) => {
+        const { qId } = req.params;
+        if (req.user.admin) {
+            Question.deleteOne({ _id: qId }, (err) => {
                 if (err) return res.status(500).send(err);
                 if (!q) return res.status(404).send({ message: "Question not found" });
                 res.status(204).send();
@@ -75,9 +70,9 @@ questionRouter.route("/:qId")
         }
     })
     .put((req, res) => {
-        const { courseMatId, qId } = req.params;
-        if (req.user.permissions && req.user.permissions.admin) {
-            QuestionModel.findOneAndUpdate({ _id: qId, courseMaterial: courseMatId }, req.body, { new: true }, (err, q) => {
+        const { qId } = req.params;
+        if (req.user.admin) {
+            Question.findOneAndUpdate({ _id: qId }, req.body, { new: true }, (err, q) => {
                 if (err) return res.status(500).send(err);
                 if (!q) return res.status(404).send({ message: "Question not found" });
                 res.status(200).send(q);

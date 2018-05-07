@@ -25,11 +25,7 @@ studentAuthRouter.route("/signup/:cohortId")
                     if (err) return res.send(err);
                     const token = jwt.sign({
                         id: savedStudent._id,
-                        cohortId,
-                        permissions: {
-                            admin: false,
-                            rootAccess: false
-                        }
+                        cohortId
                     }, process.env.SECRET, { expiresIn: 1000 * 60 * 60 * 24 });
                     res.status(201).send({ success: true, token, user: savedStudent.secure() });
                 });
@@ -46,11 +42,7 @@ studentAuthRouter.route("/login")
                 if (isAuthorized) {
                     const token = jwt.sign({
                         id: student._id,
-                        cohortId: student.cohortId,
-                        permissions: {
-                            admin: false,
-                            rootAccess: false
-                        }
+                        cohortId: student.cohortId
                     }, process.env.SECRET, { expiresIn: 1000 * 60 * 60 });
                     res.status(201).send({ token, user: student.secure() });
                 } else {

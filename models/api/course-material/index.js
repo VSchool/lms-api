@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const {Schema} = mongoose;
-const {ObjectId} = Schema.Types;
+const { Schema } = mongoose;
+const { ObjectId } = Schema.Types;
 
 const courseMaterialSchema = new Schema({
     name: {
@@ -16,6 +16,15 @@ const courseMaterialSchema = new Schema({
     branchLevels: [{
         type: ObjectId,
         ref: "BranchLevel",
+    }],
+    daySequence: {
+        type: Number,
+        required: true
+    },
+    classType: [{
+        type: String,
+        enum: ["FSJS", "XD","FE"],
+        required: true
     }],
     assignmentType: {
         type: String,

@@ -7,6 +7,7 @@ const CohortSchema = new Schema({
         required: true,
         enum: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     },
+    //starting and ending days are just used as a basis from which to generate each student's individual calendar.
     startingDate: {
         type: Date,
         required: true
@@ -31,4 +32,4 @@ const CohortSchema = new Schema({
     }
 }, {timestamps: true});
 
-module.exports = mongoose.model("Cohorts", CohortSchema);
+module.exports = mongoose.model("Cohort", CohortSchema);

@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const {Schema} = mongoose;
-const {ObjectId} = Schema.Types;
+const { Schema } = mongoose;
+const { ObjectId } = Schema.Types;
 
-const options = {discriminatorKey: "kind"};
+const options = { discriminatorKey: "kind" };
 
 const feedbackSchema = new Schema({
     instructor: {

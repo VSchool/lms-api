@@ -5,7 +5,7 @@ const BranchLevel = require("../../../models/api/skills-tree/branches.js");
 
 // Middleware to check if user is admin. If no, reject.
 branchLevelRouter.use((req, res, next) => {
-    if (!req.user.permissions && !req.user.permissions.admin) {
+    if (!req.user.admin) {
         return res.status(403).send({message: "Admin authorization required"})
     }
     next();
