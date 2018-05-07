@@ -8,6 +8,11 @@ const assignmentQSchema = new Schema({
         ref: "Questions",
         required: true
     },
+    student: {
+        type: ObjectId,
+        ref: "User",
+        required: true
+    },
     answerProvided: {
         type: Mixed,
     },

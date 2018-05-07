@@ -5,8 +5,6 @@ const Cohort = require("../../../models/api/cohorts");
 
 const courseMaterialRouter = express.Router();
 
-courseMaterialRouter.use("/:courseMatId/questions", require("./questions.js"));
-
 courseMaterialRouter.route("/")
     .get((req, res) => {
         if (req.user.admin) {
@@ -78,6 +76,5 @@ courseMaterialRouter.route("/:id")
             res.status(401).send({ message: "Admin authorization required" })
         }
     })
-
 
 module.exports = courseMaterialRouter;
