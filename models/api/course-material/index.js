@@ -21,6 +21,11 @@ const courseMaterialSchema = new Schema({
         type: Number,
         required: true
     },
+    classType: [{
+        type: String,
+        enum: ["FSJS", "XD","FE"],
+        required: true
+    }],
     assignmentType: {
         type: String,
         required: true,
