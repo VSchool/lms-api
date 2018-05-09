@@ -2,43 +2,40 @@ const express = require("express");
 const feedbackRouter = express.Router({ mergeParams: true });
 
 const {
-    FeedbackModel,
-    CodingFeedbackModel,
-    NonCodingFeedbackModel
+    Feedback,
+    CodingFeedback,
+    QuizFeedback
 } = require("../../../models/api/assignments/feedback.js");
-const { AssignmentsModel } = require("../../../models/api/assignments/");
+const Assignment = require("../../../models/api/assignments/");
 
 feedbackRouter.route("/")
     .get((req, res) => {
-        const { assignmentId } = req.params;
-        FeedbackModel.find({ ...req.query, assignment: assignmentId, }, (err, feedback) => {
+        FeedbackModel.find(req.query, (err, feedback) => {
             if (err) return res.send(err);
             res.status(200).send(feedback);
         });
     })
     .post((req, res) => {
-        const { assignmentId } = req.params;
         if (req.user.admin) {
-            AssignmentsModel.findById(assignmentId, (err, foundAssignment) => {
-                if (err) return res.send(err);
-                if (!foundAssignment) return res.status(404).send({ message: "Assignment not found" })
-                let newFeedback;
-                const body = { ...req.body, assignment: assignmentId, instructor: req.user.id }
-                switch (foundAssignment.kind) {
-                    case "CodingAssignments":
-                        newFeedback = new CodingFeedbackModel(body);
-                        break;
-                    case "QuizModel":
-                        newFeedback = new NonCodingFeedbackModel(body);
-                        break;
-                    default:
-                        return res.status(403).send({ message: "No assignment matches that kind" })
-                }
-                newFeedback.save((err, savedFeedback) => {
+            Assignment.findById(req.body.assignment)
+                .populate("courseMaterial assignmentType")
+                .exec((err, foundAssignment) => {
                     if (err) return res.send(err);
-                    res.status(201).send(savedFeedback);
+                    if (!foundAssignment) return res.status(404).send({ message: "Assignment not found" })
+                    let newFeedback;
+                    const body = { student: foundAssignment.assignedTo, instructor: req.user.id, ...req.body };
+                    switch (foundAssignment.courseMaterial.assignmentType) {
+                        case "quiz":
+                            newFeedback = new QuizFeedback(body);
+                            break;
+                        default:
+                            newFeedback = new CodingFeedback(body);
+                    }
+                    newFeedback.save((err, savedFeedback) => {
+                        if (err) return res.send(err);
+                        res.status(201).send(savedFeedback);
+                    })
                 })
-            })
         } else {
             res.status(403).send({ message: "Admin authorization required" });
         }

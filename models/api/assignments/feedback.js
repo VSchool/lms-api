@@ -26,10 +26,10 @@ const feedbackSchema = new Schema({
     }
 }, options);
 
-const FeedbackModel = mongoose.model("Feedback", feedbackSchema);
+const Feedback = mongoose.model("Feedback", feedbackSchema);
 
 //THIS COUNTS FOR BOTH PROJECTS AND EXERCISES:
-const CodingFeedbackModel = FeedbackModel.discriminator("CodingFeedback", new Schema({
+const CodingFeedback = Feedback.discriminator("CodingFeedback", new Schema({
     filename: {
         type: String,
         required: true
@@ -44,7 +44,7 @@ const CodingFeedbackModel = FeedbackModel.discriminator("CodingFeedback", new Sc
     },
 }, options))
 
-const NonCodingFeedbackModel = FeedbackModel.discriminator("NonCodingFeedback", new Schema({
+const QuizFeedback = Feedback.discriminator("QuizFeedback", new Schema({
     questionNum: {
         type: Number,
         required: true
@@ -53,7 +53,7 @@ const NonCodingFeedbackModel = FeedbackModel.discriminator("NonCodingFeedback", 
 
 
 module.exports = {
-    FeedbackModel,
-    CodingFeedbackModel,
-    NonCodingFeedbackModel
+    Feedback,
+    CodingFeedback,
+    QuizFeedback
 }
