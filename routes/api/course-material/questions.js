@@ -1,12 +1,11 @@
 const express = require("express");
-
+const questionRouter = express.Router();
 const {
     Question,
     MultChoiceQuestion,
     TextQuestion
 } = require("../../../models/api/course-material/questions.js");
-
-const questionRouter = express.Router();
+const { adminsOnly } = require("../customMiddleware");
 
 questionRouter.route("/")
     .get((req, res) => {
@@ -15,37 +14,29 @@ questionRouter.route("/")
             res.status(200).send(qs);
         });
     })
-    .post((req, res) => {
+    .post(adminsOnly, (req, res) => {
         const { type } = req.query;
-        if (req.user.admin) {
-            let newQ;
-            switch (type) {
-                case "mult":
-                    newQ = new MultChoiceQuestion(req.body);
-                    break
-                case "text":
-                    newQ = new TextQuestion(req.body);
-                    break;
-                default:
-                    return res.status(403).send({ message: "Query 'type' must be provided" })
-            }
-            newQ.save((err, savedQ) => {
-                if (err) return res.status(500).send(err);
-                res.status(201).send(savedQ);
-            })
-        } else {
-            res.status(403).send({ message: "Admin authorization required" });
+        let newQ;
+        switch (type) {
+            case "mult":
+                newQ = new MultChoiceQuestion(req.body);
+                break
+            case "text":
+                newQ = new TextQuestion(req.body);
+                break;
+            default:
+                return res.status(403).send({ message: "Query 'type' must be provided" })
         }
+        newQ.save((err, savedQ) => {
+            if (err) return res.status(500).send(err);
+            res.status(201).send(savedQ);
+        })
     })
-    .delete((req, res) => {
-        if (req.user.admin) {
-            Question.deleteMany(req.query, (err) => {
-                if (err) return res.status(500).send(err);
-                res.status(204).send();
-            })
-        } else {
-            res.status(403).send({ message: "Admin authorization required" });
-        }
+    .delete(adminsOnly, (req, res) => {
+        Question.deleteMany(req.query, (err) => {
+            if (err) return res.status(500).send(err);
+            res.status(204).send();
+        })
     })
 
 questionRouter.route("/:qId")
@@ -57,29 +48,21 @@ questionRouter.route("/:qId")
             res.status(200).send(q);
         });
     })
-    .delete((req, res) => {
+    .delete(adminsOnly, (req, res) => {
         const { qId } = req.params;
-        if (req.user.admin) {
-            Question.deleteOne({ _id: qId }, (err) => {
-                if (err) return res.status(500).send(err);
-                if (!q) return res.status(404).send({ message: "Question not found" });
-                res.status(204).send();
-            })
-        } else {
-            res.status(403).send({ message: "Admin authorization required" });
-        }
+        Question.deleteOne({ _id: qId }, (err) => {
+            if (err) return res.status(500).send(err);
+            if (!q) return res.status(404).send({ message: "Question not found" });
+            res.status(204).send();
+        })
     })
-    .put((req, res) => {
+    .put(adminsOnly, (req, res) => {
         const { qId } = req.params;
-        if (req.user.admin) {
-            Question.findOneAndUpdate({ _id: qId }, req.body, { new: true }, (err, q) => {
-                if (err) return res.status(500).send(err);
-                if (!q) return res.status(404).send({ message: "Question not found" });
-                res.status(200).send(q);
-            })
-        } else {
-            res.status(403).send({ message: "Admin authorization required" });
-        }
+        Question.findOneAndUpdate({ _id: qId }, req.body, { new: true }, (err, q) => {
+            if (err) return res.status(500).send(err);
+            if (!q) return res.status(404).send({ message: "Question not found" });
+            res.status(200).send(q);
+        })
     });
 
 module.exports = questionRouter;
