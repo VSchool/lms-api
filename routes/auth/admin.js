@@ -6,8 +6,8 @@ const nodemailer = require("nodemailer");
 
 //imports
 const { AdminUserModel } = require("../../models/users.js");
-
 const adminAuthRouter = express.Router();
+const { adminsOnly } = require("../api/customMiddleware");
 
 adminAuthRouter.use(["/authorize", /* "/signup" */], expressJwt({ secret: process.env.SECRET }));
 
@@ -51,44 +51,40 @@ adminAuthRouter.route("/login")
 
 // INVITE USER AS ADMIN
 adminAuthRouter.route("/authorize/invite-admin")
-    .post((req, res) => {
+    .post(adminsOnly, (req, res) => {
         const { email, name } = req.body;
-        if (req.user.admin) {
-            AdminUserModel.findOne({ email }, (err, foundUser) => {
-                if (err) return res.send(err);
-                if (foundUser) return res.status(403).send({ message: "User already exists" });
-                const token = jwt.sign(req.body, process.env.SECRET, { expiresIn: 1000 * 60 * 60 * 24 });
-                // TEST EMAIL ACCOUNT
-                nodemailer.createTestAccount((err, account) => {
-                    const transporter = nodemailer.createTransport({
-                        host: 'smtp.ethereal.email',
-                        auth: {
-                            user: account.user,
-                            pass: account.pass
-                        },
-                    });
-                    // LINK WILL POINT TO ACTUAL SIGNUP/LANDING PAGE
-                    const message = {
-                        from: process.env.ADMIN_SENDER_EMAIL,
-                        to: email,
-                        subject: "VSchool LMS Admin Authorization",
-                        html: `
+        AdminUserModel.findOne({ email }, (err, foundUser) => {
+            if (err) return res.send(err);
+            if (foundUser) return res.status(403).send({ message: "User already exists" });
+            const token = jwt.sign(req.body, process.env.SECRET, { expiresIn: 1000 * 60 * 60 * 24 });
+            // TEST EMAIL ACCOUNT
+            nodemailer.createTestAccount((err, account) => {
+                const transporter = nodemailer.createTransport({
+                    host: 'smtp.ethereal.email',
+                    auth: {
+                        user: account.user,
+                        pass: account.pass
+                    },
+                });
+                // LINK WILL POINT TO ACTUAL SIGNUP/LANDING PAGE
+                const message = {
+                    from: process.env.ADMIN_SENDER_EMAIL,
+                    to: email,
+                    subject: "VSchool LMS Admin Authorization",
+                    html: `
                                 <div style="text-align: center">
                                     <h3>VSchool LMS Admin Authorization</h3>
                                     <p>Name: ${name.f} ${name.l}</p>
                                     <a href="#">${process.env.ADMIN_APP_ORIGIN_URL}?token=${token}</p>
                                 </div>
                                 `
-                    }
-                    transporter.sendMail(message, (err, info) => {
-                        if (err) return res.status(500).send({ message: err.message });
-                        res.status(200).send({ messageId: nodemailer.getTestMessageUrl(info) });
-                    })
+                }
+                transporter.sendMail(message, (err, info) => {
+                    if (err) return res.status(500).send({ message: err.message });
+                    res.status(200).send({ messageId: nodemailer.getTestMessageUrl(info) });
                 })
-            });
-        } else {
-            res.status(403).send({ message: "Admin access denied" });
-        }
+            })
+        });
     });
 
 // VERIFY ADMIN HAS VALID TOKEN
@@ -100,7 +96,6 @@ adminAuthRouter.route("/authorize")
             res.status(200).send(user.secure())
         });
     });
-
 
 
 module.exports = adminAuthRouter;

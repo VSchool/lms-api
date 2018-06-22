@@ -7,6 +7,16 @@ const { ObjectId } = Schema.Types;
 const options = { discriminatorKey: "kind" };
 
 const userSchema = new Schema({
+    name: {
+        first: {
+            type: String,
+            required: true
+        },
+        last: {
+            type: String,
+            required: true
+        }
+    },
     email: {
         type: String,
         unique: true,
@@ -20,16 +30,6 @@ const userSchema = new Schema({
     avatar: {
         type: String,
         default: ""
-    },
-    name: {
-        first: {
-            type: String,
-            required: true
-        },
-        last: {
-            type: String,
-            required: true
-        }
     }
 }, options);
 
@@ -39,6 +39,7 @@ userSchema.virtual("fullName").get(function () {
     return `${this.name.first} ${this.name.last}`;
 });
 
+// Hash password before save to DB
 userSchema.pre("save", function (next) {
     bcrypt.hash(this.password, 10, (err, hash) => {
         if (err) return next(err);

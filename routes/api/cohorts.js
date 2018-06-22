@@ -1,28 +1,21 @@
 const express = require("express");
 const cohortRouter = express.Router();
 const Cohort = require("../../models/api/cohorts");
+const { adminsOnly } = require("../customMiddleware");
 
 cohortRouter.route("/")
-    .get((req, res) => {
-        if (req.user.admin) {
-            Cohort.find(req.query, (err, cohorts) => {
-                if (err) return res.send(err);
-                res.status(200).send(cohorts);
-            });
-        } else {
-            res.status(403).send({ message: "Admin authorization required" })
-        }
+    .get(adminsOnly, (req, res) => {
+        Cohort.find(req.query, (err, cohorts) => {
+            if (err) return res.send(err);
+            res.status(200).send(cohorts);
+        });
     })
-    .post((req, res) => {
-        if (req.user.admin) {
-            const newCohort = new Cohort(req.body);
-            newCohort.save((err, savedCohort) => {
-                if (err) return res.send(err);
-                res.status(201).send(savedCohort);
-            });
-        } else {
-            res.status(403).send({ message: "Admin authorization required" });
-        }
+    .post(adminsOnly, (req, res) => {
+        const newCohort = new Cohort(req.body);
+        newCohort.save((err, savedCohort) => {
+            if (err) return res.send(err);
+            res.status(201).send(savedCohort);
+        });
     });
 
 cohortRouter.route("/:id")
@@ -33,25 +26,17 @@ cohortRouter.route("/:id")
             res.status(200).send(cohort);
         });
     })
-    .put((req, res) => {
-        if (req.user.admin) {
-            Cohort.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, cohort) => {
-                if (err) return res.status(500).send(err);
-                res.status(200).send(cohort);
-            })
-        } else {
-            res.status(403).send({ message: "Admin authorization required" });
-        }
+    .put(adminsOnly, (req, res) => {
+        Cohort.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, cohort) => {
+            if (err) return res.status(500).send(err);
+            res.status(200).send(cohort);
+        })
     })
-    .delete((req, res) => {
-        if (req.user.admin) {
-            Cohort.findByIdAndRemove(req.params.id, (err, cohort) => {
-                if (err) return res.status(500).send(err);
-                res.status(204).send();
-            })
-        } else {
-            res.status(403).send({ message: "Root authorization required" });
-        }
+    .delete(adminsOnly, (req, res) => {
+        Cohort.findByIdAndRemove(req.params.id, (err, cohort) => {
+            if (err) return res.status(500).send(err);
+            res.status(204).send();
+        })
     })
 
 

@@ -10,9 +10,13 @@ const questionSchema = new Schema({
         ref: "CourseMaterial",
         required: true,
     },
-    question: {
+    questionText: {
         type: String,
         required: true
+    },
+    questionNum: {
+        type: Number,
+        required: true,
     },
     href: String,
 }, options);
