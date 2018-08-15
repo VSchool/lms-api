@@ -5,7 +5,7 @@ const expressJwt = require("express-jwt")
 const nodemailer = require("nodemailer")
 
 //imports
-const { StudentUserModel } = require("../../models/users.js")
+const { StudentUserModel } = require("../../models/user.js")
 const CohortModel = require("../../models/course.js")
 
 const studentAuthRouter = express.Router()

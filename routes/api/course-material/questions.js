@@ -4,7 +4,7 @@ const {
     Question,
     MultChoiceQuestion,
     TextQuestion
-} = require("../../../models/coursework-item/questions.js")
+} = require("../../../models/coursework-item/question.js")
 const { adminsOnly } = require("../customMiddleware")
 
 questionRouter.route("/")

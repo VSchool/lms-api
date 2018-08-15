@@ -16,6 +16,7 @@ const courseSchema = new Schema({
     },
     duration: {
         type: String,
+        enum: ["part-time", "full-time", "mastery-based"],
         required: true
     }
 }, { timestamps: true })

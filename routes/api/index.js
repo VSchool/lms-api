@@ -10,7 +10,7 @@ apiRouter.use("/assignment-qs", require("./assignments/questions"))
 apiRouter.use("/assignment-feedback", require("./assignments/feedback"))
 apiRouter.use("/coursework-item", require("./course-material/"))
 apiRouter.use("/coursework-item-qs", require("./course-material/questions"))
-apiRouter.use("/skills-tree", require("./skills-tree/"))
+apiRouter.use("/skills-tree-branches", require("./skills-tree/"))
 apiRouter.use("/branches", require("./skills-tree/branches"))
 
 module.exports = apiRouter

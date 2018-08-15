@@ -5,7 +5,7 @@ const expressJwt = require("express-jwt")
 const nodemailer = require("nodemailer")
 
 //imports
-const { AdminUserModel } = require("../../models/users.js")
+const { AdminUserModel } = require("../../models/user.js")
 const adminAuthRouter = express.Router()
 const { adminsOnly } = require("../api/customMiddleware")
 

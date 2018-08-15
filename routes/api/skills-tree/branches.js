@@ -1,6 +1,6 @@
 const express = require("express")
 const branchLevelRouter = express.Router()
-const BranchLevel = require("../../../models/skills-tree/branches.js")
+const BranchLevel = require("../../../models/skills-tree-branch")
 const { adminsOnly } = require("../customeMiddleware")
 
 // Middleware to check if user is admin. If no, reject.

@@ -1,6 +1,6 @@
 const express = require("express")
 const skillsTreeRouter = express.Router()
-const SkillsTree = require("../../../models/skills-tree/")
+const SkillsTree = require("../../../models/skills-tree-branches/")
 const { adminsOnly, studentsOnly } = require("../customMiddleware")
 
 skillsTreeRouter.route("/")

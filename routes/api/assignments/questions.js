@@ -1,7 +1,7 @@
 const express = require("express")
 const assignmentQRouter = express.Router()
 
-const AssignmentQ = require("../../../models/tasks/questions")
+const AssignmentQ = require("../../../models/tasks/question")
 
 assignmentQRouter.route("/")
     .post((req, res) => {
