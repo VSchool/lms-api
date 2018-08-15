@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const {Schema} = mongoose;
-const {ObjectId} = Schema.Types;
+const mongoose = require("mongoose")
+const {Schema} = mongoose
+const {ObjectId} = Schema.Types
 
 const skillsTreeSchema = new Schema({
     student: {
@@ -13,6 +13,6 @@ const skillsTreeSchema = new Schema({
         ref: "BranchLevel",
         required: true
     }]
-});
+})
 
-module.exports = mongoose.model("SkillsTree", skillsTreeSchema);
+module.exports = mongoose.model("SkillsTree", skillsTreeSchema)

@@ -1,12 +1,12 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const mongoose = require("mongoose")
+const bcrypt = require("bcrypt")
 
-const { Schema } = mongoose;
-const { ObjectId } = Schema.Types;
+const { Schema } = mongoose
+const { ObjectId } = Schema.Types
 
-const options = { discriminatorKey: "kind" };
+const options = { discriminatorKey: "kind", timestamps: true }
 
-const userSchema = new Schema({
+const baseUserSchema = new Schema({
     name: {
         first: {
             type: String,
@@ -30,60 +30,68 @@ const userSchema = new Schema({
     avatar: {
         type: String,
         default: ""
-    }
-}, options);
+    },
+    signupToken: String
+}, options)
 
 // Create a virtual fullName property (doesn't get saved to
 // DB but is part of the object that comes back from the DB)
-userSchema.virtual("fullName").get(function () {
-    return `${this.name.first} ${this.name.last}`;
-});
+baseUserSchema.virtual("fullName").get(function () {
+    return `${this.name.first} ${this.name.last}`
+})
 
 // Hash password before save to DB
-userSchema.pre("save", function (next) {
+baseUserSchema.pre("save", function (next) {
     bcrypt.hash(this.password, 10, (err, hash) => {
-        if (err) return next(err);
-        this.password = hash;
-        next();
-    });
-});
+        if (err) return next(err)
+        this.password = hash
+        next()
+    })
+})
 
-userSchema.methods.secure = function () {
+baseUserSchema.methods.secure = function () {
     // Include virtuals (fullName) in the created object
-    const user = this.toObject({ virtuals: true });
+    const user = this.toObject({ virtuals: true })
     //remove sensitive info from user object before sending it back to client
-    delete user.password;
-    delete user.permissions;
-    delete user.id;
-    return user;
-}
-userSchema.methods.auth = function (pwdAttempt, cb) {
-    bcrypt.compare(pwdAttempt, this.password, cb);
+    delete user.password
+    delete user._id
+    delete user.signupToken
+    return user
 }
 
-const UserModel = mongoose.model("User", userSchema);
+baseUserSchema.methods.auth = function (pwdAttempt, cb) {
+    bcrypt.compare(pwdAttempt, this.password, cb)
+}
 
-const AdminUserModel = UserModel.discriminator("AdminUser", new Schema({
+const BaseUser = mongoose.model("BaseUser", baseUserSchema)
+
+const AdminUser = BaseUser.discriminator("AdminUser", new Schema({
     admin: {
         type: Boolean,
         default: true
     },
-}, options));
+}, options))
 
-const StudentUserModel = UserModel.discriminator("StudentUser", new Schema({
-    cohortId: {
+// For use in the embedded courses array in StudentUser model below
+const courseSchema = new Schema({
+    courseId: {
         type: ObjectId,
-        required: true,
-        ref: "Cohorts"
+        ref: "Course"
     },
-    passed: {
+    startDate: Date,
+    finishDate: Date
+})
+
+const StudentUser = BaseUser.discriminator("StudentUser", new Schema({
+    courses: [courseSchema],
+    admin: {
         type: Boolean,
         default: false
     }
-}, options));
+}, options))
 
 module.exports = {
-    UserModel,
-    AdminUserModel,
-    StudentUserModel
+    // BaseUser,
+    AdminUser,
+    StudentUser
 }
