@@ -1,43 +1,43 @@
-const express = require("express");
-const cohortRouter = express.Router();
-const Cohort = require("../../models/api/cohorts");
-const { adminsOnly } = require("../customMiddleware");
+const express = require("express")
+const courseRouter = express.Router()
+const Course = require("../../models/course")
+const { adminsOnly } = require("../../customMiddleware")
 
-cohortRouter.route("/")
+courseRouter.route("/")
     .get(adminsOnly, (req, res) => {
-        Cohort.find(req.query, (err, cohorts) => {
-            if (err) return res.send(err);
-            res.status(200).send(cohorts);
-        });
+        Course.find(req.query, (err, courses) => {
+            if (err) return res.send(err)
+            return res.status(200).send(courses)
+        })
     })
     .post(adminsOnly, (req, res) => {
-        const newCohort = new Cohort(req.body);
-        newCohort.save((err, savedCohort) => {
-            if (err) return res.send(err);
-            res.status(201).send(savedCohort);
-        });
-    });
+        const newCourse = new Course(req.body)
+        newCourse.save((err, savedCourse) => {
+            if (err) return res.send(err)
+            return res.status(201).send(savedCourse)
+        })
+    })
 
-cohortRouter.route("/:id")
+courseRouter.route("/:id")
     .get((req, res) => {
-        Cohort.findById(req.params.id, (err, cohort) => {
-            if (err) return res.send(err);
-            if (!cohort) return res.status(404).send({ message: "Cohort not found" })
-            res.status(200).send(cohort);
-        });
+        Course.findById(req.params.id, (err, course) => {
+            if (err) return res.send(err)
+            if (!course) return res.status(404).send({ message: "Course not found" })
+            return res.status(200).send(course)
+        })
     })
     .put(adminsOnly, (req, res) => {
-        Cohort.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, cohort) => {
-            if (err) return res.status(500).send(err);
-            res.status(200).send(cohort);
+        Course.findByIdAndUpdate(req.params.id, req.body, { new: true }, (err, course) => {
+            if (err) return res.status(500).send(err)
+            return res.status(200).send(course)
         })
     })
     .delete(adminsOnly, (req, res) => {
-        Cohort.findByIdAndRemove(req.params.id, (err, cohort) => {
-            if (err) return res.status(500).send(err);
-            res.status(204).send();
+        Course.findByIdAndRemove(req.params.id, (err, course) => {
+            if (err) return res.status(500).send(err)
+            return res.status(204).send()
         })
     })
 
 
-module.exports = cohortRouter;
+module.exports = courseRouter;
