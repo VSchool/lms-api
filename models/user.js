@@ -6,6 +6,10 @@ const { ObjectId } = Schema.Types
 
 const options = { discriminatorKey: "kind", timestamps: true }
 
+
+/* * * * * * */
+/* BASE USER */
+/* * * * * * */
 const baseUserSchema = new Schema({
     name: {
         first: {
@@ -65,6 +69,10 @@ baseUserSchema.methods.auth = function (pwdAttempt, cb) {
 
 const BaseUser = mongoose.model("BaseUser", baseUserSchema)
 
+
+/* * * * * * * */
+/* ADMIN USER  */
+/* * * * * * * */
 const AdminUser = BaseUser.discriminator("AdminUser", new Schema({
     admin: {
         type: Boolean,
@@ -72,14 +80,24 @@ const AdminUser = BaseUser.discriminator("AdminUser", new Schema({
     },
 }, options))
 
-// For use in the embedded courses array in StudentUser model below
+
+/* * * * * * * * * */
+/*  STUDENT USER   */
+/* * * * * * * * * */
+
+// `courseSchema` is for use in the embedded
+// courses array in StudentUser model below
 const courseSchema = new Schema({
     courseId: {
         type: ObjectId,
         ref: "Course"
     },
     startDate: Date,
-    finishDate: Date
+    finishDate: Date,
+    currentModule: {
+        type: Schema.Types.ObjectId,
+        ref: "Module"
+    }
 })
 
 const StudentUser = BaseUser.discriminator("StudentUser", new Schema({

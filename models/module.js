@@ -23,7 +23,7 @@ const moduleSchema = new Schema({
     requiredCoursework: [{
         type: Schema.Types.ObjectId,
         ref: "CourseworkItem"
-    }]
+    }],
 })
 
 module.exports = mongoose.model("Module", moduleSchema)

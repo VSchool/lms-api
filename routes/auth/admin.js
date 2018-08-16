@@ -7,7 +7,7 @@ const nodemailer = require("nodemailer")
 //imports
 const { AdminUserModel } = require("../../models/user.js")
 const adminAuthRouter = express.Router()
-const { adminsOnly } = require("../api/customMiddleware")
+const { adminsOnly } = require("../../customMiddleware")
 
 adminAuthRouter.use(["/authorize", /* "/signup" */], expressJwt({ secret: process.env.SECRET }))
 

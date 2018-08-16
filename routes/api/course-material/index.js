@@ -2,7 +2,7 @@ const express = require("express")
 const courseworkItemRouter = express.Router()
 const CourseworkItem = require("../../../models/coursework-item/")
 const Cohort = require("../../../models/course")
-const { adminsOnly } = require("../customMiddleware")
+const { adminsOnly } = require("../../../customMiddleware")
 
 courseworkItemRouter.route("/")
     .get((req, res) => {
