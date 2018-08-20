@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt")
 const { Schema } = mongoose
 const { ObjectId } = Schema.Types
 
-const options = { discriminatorKey: "kind", timestamps: true }
+const options = { discriminatorKey: "type", timestamps: true }
 
 
 /* * * * * * */
@@ -88,7 +88,7 @@ const AdminUser = BaseUser.discriminator("AdminUser", new Schema({
 // `courseSchema` is for use in the embedded
 // courses array in StudentUser model below
 const courseSchema = new Schema({
-    courseId: {
+    course: {
         type: ObjectId,
         ref: "Course"
     },
