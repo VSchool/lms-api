@@ -1,8 +1,8 @@
-const express = require("express");
-const authRouter = express.Router();
+const express = require("express")
+const authRouter = express.Router()
 
-authRouter.use("/admin", require("./admin.js"));
-authRouter.use("/student", require("./student.js"));
+authRouter.use("/admins", require("./admin"))
+authRouter.use("/students", require("./student"))
 
 
-module.exports = authRouter;
+module.exports = authRouter
