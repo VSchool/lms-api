@@ -34,8 +34,7 @@ const baseUserSchema = new Schema({
     avatar: {
         type: String,
         default: ""
-    },
-    signupToken: String
+    }
 }, options)
 
 // Create a virtual fullName property (doesn't get saved to
@@ -59,7 +58,6 @@ baseUserSchema.methods.secure = function () {
     //remove sensitive info from user object before sending it back to client
     delete user.password
     delete user._id
-    delete user.signupToken
     return user
 }
 
@@ -67,12 +65,13 @@ baseUserSchema.methods.auth = function (pwdAttempt, cb) {
     bcrypt.compare(pwdAttempt, this.password, cb)
 }
 
-const BaseUser = mongoose.model("BaseUser", baseUserSchema)
+const BaseUser = mongoose.model("User", baseUserSchema)
 
 
 /* * * * * * * */
 /* ADMIN USER  */
 /* * * * * * * */
+
 const AdminUser = BaseUser.discriminator("AdminUser", new Schema({
     admin: {
         type: Boolean,
@@ -92,7 +91,10 @@ const courseSchema = new Schema({
         type: ObjectId,
         ref: "Course"
     },
-    startDate: Date,
+    startDate: {
+        type: Date,
+        default: Date.now
+    },
     finishDate: Date,
     currentModule: {
         type: Schema.Types.ObjectId,
