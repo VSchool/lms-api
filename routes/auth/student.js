@@ -1,81 +1,92 @@
 const express = require("express")
 const jwt = require("jsonwebtoken")
 const expressJwt = require("express-jwt")
-const mongoose = require("mongoose")
+const crypto = require("crypto")
 const { StudentUser } = require("../../models/user")
 const Course = require("../../models/course")
 const Module = require("../../models/module")
-const { inviteNewUser } = require("../../utils/inviteNewUser")
+const sendInviteEmail = require("../../utils/sendInviteEmail")
 const { adminsOnly } = require("../../customMiddleware")
 const studentAuthRouter = express.Router()
 
 studentAuthRouter.use(["/authorize", "/invite", "/signup"], expressJwt({ secret: process.env.SECRET }))
 
 studentAuthRouter.post("/invite", adminsOnly, async (req, res) => {
-    // The request body for this request should include name.first, name.last, email, and course.
-    // course is the ID of the course they're invited to
-
-    if (!req.body.course) {
-        return res.status(400).send({ message: "You must pick a course for this student to be enrolled in." })
+    // The request body should include name.first, name.last, email, and courseId.
+    // courseId is the ID of the course they're invited to join
+    if (!req.body.name || !req.body.name.first || !req.body.name.last || !req.body.email || !req.body.courseId) {
+        return res.status(400).send({ message: "You must include all required fields. Check the docs for more info." })
     }
 
     try {
-        const invitedUser = req.body
-        invitedUser.admin = false
-        const response = await inviteNewUser(invitedUser)
-        return res.send(response.message)
+        const newStudent = new StudentUser(req.body)
+
+        // Set a temp password to satisfy the required attribute
+        newStudent.password = crypto.randomBytes(5).toString("hex")
+        const course = await Course.findById(req.body.courseId)
+        const module0 = await Module.findOne({ sequenceNum: 0, courseId: course._id })
+        newStudent.courses = [{ currentModule: module0, course }]
+        await newStudent.save()
+        const result = await sendInviteEmail(newStudent.secure())
+        return res.status(201).send({ user: newStudent.secure(), message: result.message })
     } catch (e) {
-        return res.status(500).send(e.message)
+        console.error(e)
+        return res.status(500).send(e)
     }
 })
 
 studentAuthRouter.post("/signup", async (req, res) => {
     try {
         const invitedUser = req.body
-        const newStudent = new StudentUser(invitedUser)
-        await newStudent.save()
-        const module0 = await Module.findOne({sequenceNum: 0, courseId: req.user.course})
-        newStudent.courses.push({course: req.user.course, currentModule: module0._id})
-        await newStudent.save()
-        await StudentUser.populate(newStudent, [{path: "courses.course"}, {path: "courses.currentModule"}])
+        invitedUser.admin = false
+        const updatedStudent = await StudentUser.findByIdAndUpdate(
+            req.user._id,
+            invitedUser,
+            { new: true }
+        )
+        // await StudentUser.populate(updatedStudent, [{ path: "courses.course" }, { path: "courses.currentModule" }])
         const token = jwt.sign(
-            newStudent.secure(),
+            updatedStudent.secure(),
             process.env.SECRET,
             { expiresIn: "24h" }
         )
-        return res.status(201).send({ token, user: newStudent.secure() })
+        return res.status(201).send({ token, user: updatedStudent.secure() })
     } catch (e) {
-        console.log("There was a problem")
+        console.error(e)
         return res.status(500).send(e)
     }
 })
 
 studentAuthRouter.post("/login", async (req, res) => {
-    StudentUser.findOne({ email: req.body.email }, (err, student) => {
-        if (err) return res.send(err)
-        if (!student) return res.status(404).send({ message: "User not found" })
-        student.auth(req.body.password, (err, isAuthorized) => {
-            if (err) return res.send(err)
-            if (isAuthorized) {
-                const token = jwt.sign({
-                    id: student._id,
-                    cohortId: student.cohortId
-                }, process.env.SECRET, { expiresIn: 1000 * 60 * 60 })
-                res.status(201).send({ token, user: student.secure() })
-            } else {
-                return res.status(403).send({ message: "Invalid email/password combination" })
-            }
-        })
-    })
+    try {
+        const student = await StudentUser.findOne({ email: req.body.email })
+        if (!student) return res.status(401).send({ message: "Invalid email or password" })
+        const isAuthorized = await student.auth(req.body.password)
+        if (isAuthorized) {
+            const token = jwt.sign(
+                student.secure(),
+                process.env.SECRET,
+                { expiresIn: "24h" }
+            )
+            return res.send({ user: student.secure(), token })
+        }
+        return res.status(401).send({ message: "Invalid email or password" })
+    } catch (e) {
+        console.error(e)
+        return res.status(500).send(e)
+    }
 })
 
 // VERIFY STUDENT HAS VALID TOKEN
 studentAuthRouter.get("/authorize", async (req, res) => {
-    StudentUser.findById(req.user.id, (err, student) => {
-        if (err) return res.send(err)
+    try {
+        const student = await StudentUser.findById(req.user._id)
         if (!student) return res.status(404).send({ message: "User not found" })
-        res.status(200).send(student.secure())
-    })
+        return res.status(200).send(student.secure())
+    } catch (e) {
+        console.error(e)
+        return res.status(500).send(e)
+    }
 })
 
 module.exports = studentAuthRouter

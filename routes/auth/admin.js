@@ -1,80 +1,85 @@
 const express = require("express")
 const jwt = require("jsonwebtoken")
+const crypto = require("crypto")
 const expressJwt = require("express-jwt")
 const { AdminUser } = require("../../models/user.js")
 const { adminsOnly } = require("../../customMiddleware")
-const { inviteNewUser } = require("../../utils/inviteNewUser")
+const sendInviteEmail = require("../../utils/sendInviteEmail")
 const adminAuthRouter = express.Router()
 
 adminAuthRouter.use(["/authorize", "/invite", "/signup"], expressJwt({ secret: process.env.SECRET }), adminsOnly)
 
-// Regular login for existing admins
-adminAuthRouter.post("/login", async (req, res) => {
-    try {
-        const { email } = req.body
-        const user = await AdminUser.findOne({ email })
-        console.log(user)
-        if (!user) return res.status(401).send({ message: "Invalid email or password" })
-
-        // Todo: Change .auth method to be promise-based using util.promisify
-        user.auth(req.body.password, (err, isAuthorized) => {
-            if (err) throw err
-            if (isAuthorized) {
-                const token = jwt.sign(
-                    user.secure(),
-                    process.env.SECRET,
-                    { expiresIn: "24h" }
-                )
-                return res.send({ user: user.secure(), token })
-            } else {
-                return res.status(401).send({ message: "Invalid email or password" })
-            }
-        })
-    } catch (err) {
-        console.log(err.message)
-        return res.status(500).send(err)
-    }
-})
-
-// Get user's info based on the provided token (if page is refreshed, e.g.)
-adminAuthRouter.get("/authorize", async (req, res) => {
-    try {
-        const user = await AdminUser.findById(req.user.id)
-        if (!user) return res.status(404).send({ message: "User doesn't exist" })
-        return res.status(200).send(user.secure())
-    } catch (err) {
-        if (err) return res.send(err)
-    }
-})
-
 // Invite a new admin to the team. Must be done by another admin.
+// The request body should include name.first, name.last, and email
 adminAuthRouter.post("/invite", async (req, res) => {
+    if (!req.body.name || !req.body.name.first || !req.body.name.last || !req.body.email) {
+        return res.status(400).send({ message: "You must include all required fields. Check the docs for more info." })
+    }
+
     try {
-        const invitedUser = req.body
-        invitedUser.admin = true
-        const response = await inviteNewUser(invitedUser)
-        return res.send(response.message)
+        const newAdmin = new AdminUser(req.body)
+        newAdmin.password = crypto.randomBytes(5).toString("hex")
+        await newAdmin.save()
+        const result = await sendInviteEmail(newAdmin.secure())
+        return res.status(201).send({ user: newAdmin.secure(), message: result.message })
     } catch (e) {
-        return res.status(500).send(e.message)
+        console.error(e)
+        return res.status(500).send(e)
     }
 })
 
 // Signup as an admin. Only available if you've been sent a link from the /invite endpoint
 adminAuthRouter.post("/signup", async (req, res) => {
     try {
-        const foundUser = await AdminUser.findOne({ email: req.user.email })
-        if (foundUser) return res.status(400).send({ message: "A user with that email already exists" })
-        const admin = new AdminUser(req.body)
-        const user = await admin.save()
+        const invitedUser = req.body
+        invitedUser.admin = true
+        const updatedAdmin = await AdminUser.findByIdAndUpdate(
+            req.user._id,
+            invitedUser,
+            { new: true }
+        )
         const token = jwt.sign(
-            user.secure(),
+            updatedAdmin.secure(),
             process.env.SECRET,
             { expiresIn: "24h" }
         )
-        return res.status(201).send({ token, user: user.secure() })
-    } catch (err) {
-        console.error(err)
-        if (err) return res.status(500).send(err)
+        return res.status(201).send({ token, user: updatedAdmin.secure() })
+    } catch (e) {
+        console.error(e)
+        return res.status(500).send(e)
+    }
+})
+
+// Regular login for existing admins
+adminAuthRouter.post("/login", async (req, res) => {
+    try {
+        const admin = await AdminUser.findOne({ email: req.body.email })
+        if (!admin) return res.status(401).send({ message: "Invalid email or password" })
+        const isAuthorized = await admin.auth(req.body.password)
+        if (isAuthorized) {
+            const token = jwt.sign(
+                admin.secure(),
+                process.env.SECRET,
+                { expiresIn: "24h" }
+            )
+            return res.send({ user: admin.secure(), token })
+        }
+        return res.status(401).send({ message: "Invalid email or password" })
+    } catch (e) {
+        console.error(e)
+        return res.status(500).send(e)
+    }
+})
+
+// Get user's info based on the provided token (if page is refreshed, e.g.)
+adminAuthRouter.get("/authorize", async (req, res) => {
+    try {
+        const admin = await AdminUser.findById(req.user._id)
+        if (!admin) return res.status(404).send({ message: "User not found" })
+        return res.status(200).send(user.secure())
+    } catch (e) {
+        console.error(e)
+        return res.status(500).send(e)
     }
 })
 
