@@ -12,15 +12,12 @@ app.use(bodyParser.json())
 app.use(morgan("dev"))
 app.use(express.static(path.join(__dirname, "static")))
 //routes
-app.use("/api", require("./routes/api/"));
-app.use("/auth", require("./routes/auth/"));
+app.use("/api/v1", require("./routes"))
 
 mongoose.connect(process.env.MONGODB_URI, (err) => {
-    if (err)
-        console.error(err);
-    else
-        app.listen(process.env.PORT, () => console.log(`Connected to MongoDB on ${process.env.MONGODB_URI}\nConnected to Server on port ${process.env.PORT}`))
-});
+    if (err) throw err
+    console.log(`Connected to MongoDB on ${process.env.MONGODB_URI}`)
+})
 
 app.get("/docs", (req, res) => {
     res.sendFile(path.join(__dirname, "docs", "index.html"))
