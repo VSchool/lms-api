@@ -20,7 +20,7 @@ mongoose.connect(process.env.MONGODB_URI, (err) => {
 })
 
 app.get("/docs", (req, res) => {
-    res.sendFile(path.join(__dirname, "docs", "index.html"))
+    res.sendFile(path.join(__dirname, "static", "docs", "index.html"))
 })
 
 app.listen(process.env.PORT, () => {
