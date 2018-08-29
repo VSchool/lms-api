@@ -111,7 +111,8 @@ paths:
             An object with a secure `user` object (no password) and a `token` (JWT).
           content:
             application/json:
-              # TODO: Add schema w/ ref here
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
               example:
                 token: "123....456....abcd"
                 user:
@@ -148,7 +149,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SecureUser"
+                $ref: "#/components/schemas/StudentUser"
               example:
                 _id: "5b76ef0e9a18a607b7418ff0"
                 name:
@@ -360,31 +361,33 @@ components:
         avatar:
           type: string
           default: ""
-    SecureUser:
-      type: object
-      required:
-        - name
-        - email
-      discriminator: 
-        propertyName: type
-      properties:
-        _id:
-          type: string
-        name:
-          type: object
-          required:
-            - first
-            - last
-          properties:
-            first:
-              type: string
-            last:
-              type: string
-        email:
-          type: string
-        avatar:
-          type: string
-          default: ""
+
+    # SecureUser:
+    #   type: object
+    #   required:
+    #     - name
+    #     - email
+    #   discriminator: 
+    #     propertyName: type
+    #   properties:
+    #     _id:
+    #       type: string
+    #     name:
+    #       type: object
+    #       required:
+    #         - first
+    #         - last
+    #       properties:
+    #         first:
+    #           type: string
+    #         last:
+    #           type: string
+    #     email:
+    #       type: string
+    #     avatar:
+    #       type: string
+    #       default: ""
+
     StudentUser:
       allOf:
         - $ref: "#/components/schemas/User"
@@ -616,6 +619,16 @@ components:
           type: string
         password:
           type: string
+    
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/StudentUser"
     
     AdminInviteRequestBody:
       type: object
