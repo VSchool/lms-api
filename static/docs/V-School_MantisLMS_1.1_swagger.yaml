@@ -22,7 +22,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StudentInvite"
+              $ref: "#/components/schemas/StudentInviteRequestBody"
             example:
               name:
                 first: Joe
@@ -60,13 +60,14 @@ paths:
           Can include anything from the user object *except* the `courses` array. `admin` property will always be changed to `false`.
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/UserSignupRequestBody"
             example:
               name:
                 first: Joe
                 last: Schmoe
               email: joe@schmoe.rocks
               password: Imactuallyagoodguydespitemyname
-              courseId: "5b7c893dd9087a39d5d3480e"
       responses:
         "200":
           description: >
@@ -83,10 +84,11 @@ paths:
                     last: Schmoe
                   email: joe@schmoe.rocks
                   admin: false
+                  # TODO: add a CoursesArray model and $ref it here
                 token: "123....456....abcd"
   /auth/students/login:
     post:
-      tags: 
+      tags:
         - Student Authentication
       summary: Login route for students
       description: >
@@ -98,6 +100,8 @@ paths:
           Must provide the email and password used when signing up
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequestBody"
             example:
               email: joe@schmoe.rocks
               password: Imactuallyagoodguydespitemyname
@@ -107,6 +111,7 @@ paths:
             An object with a secure `user` object (no password) and a `token` (JWT).
           content:
             application/json:
+              # TODO: Add schema w/ ref here
               example:
                 token: "123....456....abcd"
                 user:
@@ -142,14 +147,15 @@ paths:
             An object with a secure `user` object (no password)
           content:
             application/json:
+              schema:
+                $ref: "#/components/schemas/SecureUser"
               example:
-                user:
-                  _id: "5b76ef0e9a18a607b7418ff0"
-                  name:
-                    first: Joe
-                    last: Schmoe
-                  email: joe@schmoe.rocks
-                  admin: false
+                _id: "5b76ef0e9a18a607b7418ff0"
+                name:
+                  first: Joe
+                  last: Schmoe
+                email: joe@schmoe.rocks
+                admin: false
         "404":
           description: >
             Student not found
@@ -177,11 +183,12 @@ paths:
           A simplified version of a user object with only the info required to send an invite email.
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/AdminInviteRequestBody"
             example:
               firstName: Jane
               lastName: Jelilah
               email: jane@jelilah.republican
-              courseId: "5b7c893dd9087a39d5d348c"
       responses:
         "201":
           description: >
@@ -213,12 +220,13 @@ paths:
           Can include anything from the admin user object. `admin` property will always be changed to `true`.
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/UserSignupRequestBody"
             example:
               firstName: Jane
               lastName: Jelilah
               email: jane@jelilah.republican
               password: MAGA2020
-              courseId: "5b7c893dd9087a39d5d3480f"
       responses:
         "200":
           description: >
@@ -250,6 +258,8 @@ paths:
           Must provide the email and password used when signing up
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequestBody"
             example:
               email: jane@jelilah.republican
               password: MAGA2020
@@ -259,6 +269,8 @@ paths:
             An object with a secure `user` object (no password) and a `token` (JWT).
           content:
             application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
               example:
                 token: "123....456....abcd"
                 user:
@@ -294,14 +306,15 @@ paths:
             An object with a secure `user` object (no password)
           content:
             application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
               example:
-                user:
-                  _id: "5b76ef0e9a18a607b7418ff0"
-                  name:
-                    first: Jane
-                    last: Jelilah
-                  email: jane@jelilah.republican
-                  admin: true
+                _id: "5b76ef0e9a18a607b7418ff0"
+                name:
+                  first: Jane
+                  last: Jelilah
+                email: jane@jelilah.republican
+                admin: true
         "404":
           description: >
             Student not found
@@ -314,7 +327,7 @@ paths:
                     type: string
                 example:
                   message: "User not found"
-  
+
 
 components:
   schemas:
@@ -347,7 +360,31 @@ components:
         avatar:
           type: string
           default: ""
-
+    SecureUser:
+      type: object
+      required:
+        - name
+        - email
+      discriminator: 
+        propertyName: type
+      properties:
+        _id:
+          type: string
+        name:
+          type: object
+          required:
+            - first
+            - last
+          properties:
+            first:
+              type: string
+            last:
+              type: string
+        email:
+          type: string
+        avatar:
+          type: string
+          default: ""
     StudentUser:
       allOf:
         - $ref: "#/components/schemas/User"
@@ -530,7 +567,7 @@ components:
         imgUrl:
           type: string
 
-    StudentInvite:
+    StudentInviteRequestBody:
       type: object
       required:
         - name
@@ -550,4 +587,52 @@ components:
         email:
           type: string
         courseId:
+          type: string
+
+    UserSignupRequestBody:
+      type: object
+      required:
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: object
+          properties:
+            first:
+              type: string
+            last:
+              type: string
+
+    LoginRequestBody:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    
+    AdminInviteRequestBody:
+      type: object
+      required:
+        - name
+        - email
+        - courseId
+      properties:
+        name:
+          type: object
+          required:
+            - first
+            - last
+          properties:
+            first:
+              type: string
+            last:
+              type: string
+        email:
           type: string

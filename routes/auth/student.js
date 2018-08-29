@@ -44,7 +44,6 @@ studentAuthRouter.post("/signup", async (req, res) => {
             invitedUser,
             { new: true }
         )
-        // await StudentUser.populate(updatedStudent, [{ path: "courses.course" }, { path: "courses.currentModule" }])
         const token = jwt.sign(
             updatedStudent.secure(),
             process.env.SECRET,
@@ -82,7 +81,7 @@ studentAuthRouter.get("/me/from/token", async (req, res) => {
     try {
         const student = await StudentUser.findById(req.user._id)
         if (!student) return res.status(404).send({ message: "User not found" })
-        return res.status(200).send({ user: student.secure() })
+        return res.status(200).send(student.secure())
     } catch (e) {
         console.error(e)
         return res.status(500).send(e)
