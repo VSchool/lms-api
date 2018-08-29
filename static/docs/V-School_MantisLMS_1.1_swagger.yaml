@@ -1,0 +1,527 @@
+openapi: 3.0.0
+servers:
+  - url: 'https://mantis.vschool.io/api/v1'
+info:
+  version: "1.1"
+  title: Mantis  LMS API
+  description: The API for the V School Learning Management System
+
+paths: 
+  /auth/students/invite:
+    post:
+      tags: 
+        - Student Authentication
+      summary: Invites a new student to the LMS
+      description: >
+        Must be performed by an Admin. This sends an invite email with a link to the signup page, including a token to be used by the signup page
+      operationId: inviteStudent
+      requestBody:
+        required: true
+        description: >
+          A simplified version of a user object with only the info required to send an invite email. Server will handle structuring the actual data being saved, so this request body does not match the User schema exactly.
+        content:
+          application/json:
+            example:
+              firstName: Joe
+              lastName: Schmoe
+              email: joe@schmoe.rocks
+              courseId: "5b7c893dd9087a39d5d3480e"
+      responses:
+        "201":
+          description: >
+            An object with a secure `user` object (no password) and a `message`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentUser"
+              example:
+                user:
+                  _id: "5b76ef0e9a18a607b7418ff0"
+                  name:
+                    first: Joe
+                    last: Schmoe
+                  email: joe@schmoe.rocks
+                  admin: false
+                message: "https://ethereal.email/message/W4SQc3fOfAyM42fyW4SQddYtiBHxo5uuAAAAAZM1wSIw00vZDMts7WbcJj4"
+  /auth/students/signup:
+    post:
+      tags: 
+        - Student Authentication
+      summary: Signup route for a new student
+      description: >
+        Must include a JWT (received in the invite email). Mostly a route that changes the randomized password that was used to create the account, but can also be used if the student wants to change any other information about themselves (names, email, etc.). Course they're enrolled in cannot be changed
+      operationId: studentSignup
+      requestBody:
+        required: true
+        description: >
+          Can include anything from the user object *except* the `courses` array.
+        content:
+          application/json:
+            example:
+              firstName: Joe
+              lastName: Schmoe
+              email: joe@schmoe.rocks
+              password: Imactuallyagoodguydespitemyname
+              courseId: "5b7c893dd9087a39d5d3480e"
+      responses:
+        "200":
+          description: >
+            An object with a secure `user` object (no password) and a `token` (JWT).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentUser"
+              example:
+                user:
+                  _id: "5b76ef0e9a18a607b7418ff0"
+                  name:
+                    first: Joe
+                    last: Schmoe
+                  email: joe@schmoe.rocks
+                  admin: false
+                token: "123....456....abcd"
+  /auth/students/login:
+    post:
+      tags: 
+        - Student Authentication
+      summary: Login route for students
+      description: >
+        Most routes in Mantis are protected, requiring login. Anytime a student doesn't have a saved JWT (or it expired), this endpoint will be needed to obtain a new JWT.
+      operationId: studentLogin
+      requestBody:
+        required: true
+        description: >
+          Must provide the email and password used when signing up
+        content:
+          application/json:
+            example:
+              email: joe@schmoe.rocks
+              password: Imactuallyagoodguydespitemyname
+      responses:
+        "200":
+          description: >
+            An object with a secure `user` object (no password) and a `token` (JWT).
+          content:
+            application/json:
+              example:
+                token: "123....456....abcd"
+                user:
+                  _id: "5b76ef0e9a18a607b7418ff0"
+                  name:
+                    first: Joe
+                    last: Schmoe
+                  email: joe@schmoe.rocks
+                  admin: false
+        "401":
+          description: >
+            Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: "Invalid email or password"
+  /auth/students/me/from/token:
+    get:
+      tags: 
+        - Student Authentication
+      summary: Get a user's info from the provided JWT
+      description: >
+        Anytime a student's user info is needed you can use this route to get it
+      operationId: studentInfo
+      responses:
+        "200":
+          description: >
+            An object with a secure `user` object (no password)
+          content:
+            application/json:
+              example:
+                user:
+                  _id: "5b76ef0e9a18a607b7418ff0"
+                  name:
+                    first: Joe
+                    last: Schmoe
+                  email: joe@schmoe.rocks
+                  admin: false
+        "404":
+          description: >
+            Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: "User not found"
+  
+  /auth/admins/invite:
+    post:
+      tags: 
+        - Admin Authentication
+      summary: Invites a new admin to the LMS
+      description: >
+        Must be performed by another Admin. This sends an invite email with a link to the signup page, including a token to be used by the signup page
+      operationId: inviteAdmin
+      requestBody:
+        required: true
+        description: >
+          A simplified version of a user object with only the info required to send an invite email.
+        content:
+          application/json:
+            example:
+              firstName: Jane
+              lastName: Jelilah
+              email: jane@jelilah.republican
+              courseId: "5b7c893dd9087a39d5d348c"
+      responses:
+        "201":
+          description: >
+            An object with a secure `user` object (no password) and a `message`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+              example:
+                user:
+                  _id: "5b76ef0e9a18a607b7418ff0"
+                  name:
+                    first: Jane
+                    last: Jelilah
+                  email: jane@jelilah.republican
+                  admin: true
+                message: "https://ethereal.email/message/W4SQc3fOfAyM42fyW4SQddYtiBHxo5uuAAAAAZM1wSIw00vZDMts7WbcJj4"
+  /auth/admins/signup:
+    post:
+      tags: 
+        - Admin Authentication
+      summary: Signup route for a new admin
+      description: >
+        Must include a JWT (received in the invite email). Mostly a route that changes the randomized password that was used to create the account, but can also be used if the admin wants to change any other information about themselves (names, email, etc.).
+      operationId: adminSignup
+      requestBody:
+        required: true
+        description: >
+          Can include anything from the admin user object
+        content:
+          application/json:
+            example:
+              firstName: Joe
+              lastName: Schmoe
+              email: joe@schmoe.rocks
+              password: Imactuallyagoodguydespitemyname
+              courseId: "5b7c893dd9087a39d5d3480e"
+      responses:
+        "200":
+          description: >
+            An object with a secure `user` object (no password) and a `token` (JWT).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentUser"
+              example:
+                user:
+                  _id: "5b76ef0e9a18a607b7418ff0"
+                  name:
+                    first: Joe
+                    last: Schmoe
+                  email: joe@schmoe.rocks
+                  admin: false
+                token: "123....456....abcd"
+  /auth/admins/login:
+    post:
+      tags: 
+        - Admin Authentication
+      summary: Login route for students
+      description: >
+        Most routes in Mantis are protected, requiring login. Anytime a student doesn't have a saved JWT (or it expired), this endpoint will be needed to obtain a new JWT.
+      operationId: studentLogin
+      requestBody:
+        required: true
+        description: >
+          Must provide the email and password used when signing up
+        content:
+          application/json:
+            example:
+              email: joe@schmoe.rocks
+              password: Imactuallyagoodguydespitemyname
+      responses:
+        "200":
+          description: >
+            An object with a secure `user` object (no password) and a `token` (JWT).
+          content:
+            application/json:
+              example:
+                token: "123....456....abcd"
+                user:
+                  _id: "5b76ef0e9a18a607b7418ff0"
+                  name:
+                    first: Joe
+                    last: Schmoe
+                  email: joe@schmoe.rocks
+                  admin: false
+        "401":
+          description: >
+            Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: "Invalid email or password"
+  /auth/admins/me/from/token:
+    get:
+      tags: 
+        - Admin Authentication
+      summary: Get a user's info from the provided JWT
+      description: >
+        Anytime a student's user info is needed you can use this route to get it
+      operationId: studentInfo
+      responses:
+        "200":
+          description: >
+            An object with a secure `user` object (no password)
+          content:
+            application/json:
+              example:
+                user:
+                  _id: "5b76ef0e9a18a607b7418ff0"
+                  name:
+                    first: Joe
+                    last: Schmoe
+                  email: joe@schmoe.rocks
+                  admin: false
+        "404":
+          description: >
+            Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                example:
+                  message: "User not found"
+  
+
+components:
+  schemas:
+
+    User:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      discriminator: 
+        propertyName: type
+      properties:
+        _id:
+          type: string
+        name:
+          type: object
+          required:
+            - first
+            - last
+          properties:
+            first:
+              type: string
+            last:
+              type: string
+        email:
+          type: string
+        password:
+          type: string
+        avatar:
+          type: string
+          default: ""
+
+    StudentUser:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            admin:
+              type: boolean
+              default: false
+            courses: 
+              type: array
+              items: 
+                type: object
+                properties:
+                  course: 
+                    type: string
+                  startDate: 
+                    type: string
+                  finishDate: 
+                    type: string
+                  currentModule:
+                    type: string
+
+    AdminUser:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            admin:
+              type: boolean
+              default: true
+    
+    Course:
+      type: object
+      required:
+        - name
+        - description
+        - courseCode
+        - duration
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        courseCode:
+          type: string
+        duration:
+          type: string
+          enum:
+            - part-time
+            - full-time
+            - mastery-based
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    
+    Task:
+      type: object
+      required:
+        - coursework
+        - assignedTo
+        - status
+      properties:
+        _id:
+          type: string
+        coursework:
+          type: string
+        assignedTo:
+          type: string
+        status:
+          type: string
+          enum:
+            - assigned
+            - submitted
+            - passed
+            - needs work
+          default: assigned
+        submissionUrl:
+          type: string
+        feedback:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    BranchLevel:
+      type: object
+      required:
+        - name
+        - code
+        - level
+        - courseworkItemsToComplete
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        level:
+          type: number
+        courseworkItemsToComplete:
+          type: string
+
+    Module:
+      type: object
+      required:
+        - courseId
+        - name
+        - description
+        - sequenceNum
+      properties:
+        courseId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        sequenceNum:
+          type: number
+        requiredCoursework:
+          type: array
+          items:
+            type: string
+
+    Event:
+      type: object
+      required:
+        - name
+        - date
+      properties:
+        name:
+          type: string
+        date:
+          type: string
+        description:
+          type: string
+
+    CourseworkItem:
+      type: object
+      required:
+        - name
+        - description
+        - taskType
+        - url
+        - sequenceNum
+        - submissionRequired
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        taskType:
+          type: string
+        moduleId:
+          type: string
+        url:
+          type: string
+        sequenceNum:
+          type: number
+        submissionRequired:
+          type: boolean
+
+    CareerResource:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
+        imgUrl:
+          type: string

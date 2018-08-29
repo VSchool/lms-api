@@ -1,17 +1,16 @@
 //dependencies
-const express = require("express");
-const mongoose = require("mongoose");
-const bp = require("body-parser");
-require("dotenv").config();
-
-//imports
-
-//initializations
-const app = express();
+const express = require("express")
+const mongoose = require("mongoose")
+const bodyParser = require("body-parser")
+const path = require("path")
+require("dotenv").config()
+const morgan = require("morgan")
+const app = express()
 
 //middleware
-app.use(bp.json());
-
+app.use(bodyParser.json())
+app.use(morgan("dev"))
+app.use(express.static(path.join(__dirname, "static")))
 //routes
 app.use("/api", require("./routes/api/"));
 app.use("/auth", require("./routes/auth/"));
@@ -23,3 +22,10 @@ mongoose.connect(process.env.MONGODB_URI, (err) => {
         app.listen(process.env.PORT, () => console.log(`Connected to MongoDB on ${process.env.MONGODB_URI}\nConnected to Server on port ${process.env.PORT}`))
 });
 
+app.get("/docs", (req, res) => {
+    res.sendFile(path.join(__dirname, "docs", "index.html"))
+})
+
+app.listen(process.env.PORT, () => {
+    console.log(`Connected to Server on port ${process.env.PORT}`)
+})
