@@ -50,7 +50,7 @@ studentAuthRouter.post("/signup", async (req, res) => {
             process.env.SECRET,
             { expiresIn: "24h" }
         )
-        return res.status(201).send({ token, user: updatedStudent.secure() })
+        return res.status(200).send({ token, user: updatedStudent.secure() })
     } catch (e) {
         console.error(e)
         return res.status(500).send(e)
@@ -78,11 +78,11 @@ studentAuthRouter.post("/login", async (req, res) => {
 })
 
 // VERIFY STUDENT HAS VALID TOKEN
-studentAuthRouter.get("/authorize", async (req, res) => {
+studentAuthRouter.get("/me/from/token", async (req, res) => {
     try {
         const student = await StudentUser.findById(req.user._id)
         if (!student) return res.status(404).send({ message: "User not found" })
-        return res.status(200).send(student.secure())
+        return res.status(200).send({ user: student.secure() })
     } catch (e) {
         console.error(e)
         return res.status(500).send(e)

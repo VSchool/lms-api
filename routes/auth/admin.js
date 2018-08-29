@@ -7,7 +7,7 @@ const { adminsOnly } = require("../../customMiddleware")
 const sendInviteEmail = require("../../utils/sendInviteEmail")
 const adminAuthRouter = express.Router()
 
-adminAuthRouter.use(["/authorize", "/invite", "/signup"], expressJwt({ secret: process.env.SECRET }), adminsOnly)
+adminAuthRouter.use(["/me/from/token", "/invite", "/signup"], expressJwt({ secret: process.env.SECRET }), adminsOnly)
 
 // Invite a new admin to the team. Must be done by another admin.
 // The request body should include name.first, name.last, and email
@@ -72,7 +72,7 @@ adminAuthRouter.post("/login", async (req, res) => {
 })
 
 // Get user's info based on the provided token (if page is refreshed, e.g.)
-adminAuthRouter.get("/authorize", async (req, res) => {
+adminAuthRouter.get("/me/from/token", async (req, res) => {
     try {
         const admin = await AdminUser.findById(req.user._id)
         if (!admin) return res.status(404).send({ message: "User not found" })
