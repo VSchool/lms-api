@@ -6,6 +6,7 @@ const apiRouter = express.Router()
 // apiRouter.use(expressJwt({ secret: process.env.SECRET }))
 
 apiRouter.use("/users", require("./user"))
+apiRouter.use("/auth", require("./auth"))
 // apiRouter.use("/cohorts", require("./cohorts.js"))
 // apiRouter.use("/tasks", require("./tasks/"))
 // apiRouter.use("/assignment-qs", require("./tasks/questions"))

@@ -3,18 +3,15 @@ const express = require("express")
 const mongoose = require("mongoose")
 const bodyParser = require("body-parser")
 require("dotenv").config()
-
-//imports
-
-//initializations
+const morgan = require("morgan")
 const app = express()
 
 //middleware
 app.use(bodyParser.json())
+app.use(morgan("dev"))
 
 //routes
-app.use("/api", require("./routes/"))
-app.use("/auth", require("./routes/auth/"))
+app.use("/api/v1", require("./routes"))
 
 mongoose.connect(process.env.MONGODB_URI, (err) => {
     if (err) throw err

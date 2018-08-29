@@ -1,122 +1,85 @@
-//dependencies
 const express = require("express")
 const jwt = require("jsonwebtoken")
-const expressJwt = require("express-jwt")
-const nodemailer = require("nodemailer")
 const crypto = require("crypto")
-
-//imports
+const expressJwt = require("express-jwt")
 const { AdminUser } = require("../../models/user.js")
-const adminAuthRouter = express.Router()
 const { adminsOnly } = require("../../customMiddleware")
+const sendInviteEmail = require("../../utils/sendInviteEmail")
+const adminAuthRouter = express.Router()
 
-adminAuthRouter.use(["/authorize", "/invite", "/signup"], expressJwt({ secret: process.env.SECRET }), adminsOnly)
-
-// Regular login for existing admins
-adminAuthRouter.post("/login", async (req, res) => {
-    try {
-        const user = await AdminUser.findOne({ email: req.body.email })
-        if (!user) return res.status(401).send({ message: "Invalid email or password" })
-
-        // Todo: Change .auth method to be promise-based
-        user.auth(req.body.password, (err, isAuthorized) => {
-            if (err) throw err
-            if (isAuthorized) {
-                const token = jwt.sign(
-                    user.secure(),
-                    process.env.SECRET,
-                    { expiresIn: "24h" }
-                )
-                return res.send({ user: user.secure(), token })
-            } else {
-                return res.status(401).send({ message: "Invalid email or password" })
-            }
-        })
-    } catch (err) {
-        console.log(err.message)
-        return res.status(500).send(err)
-    }
-})
-
-// Get user's info based on the provided token (if page is refreshed, e.g.)
-adminAuthRouter.get("/authorize", async (req, res) => {
-    try {
-        const user = await AdminUser.findById(req.user.id)
-        if (!user) return res.status(404).send({ message: "User doesn't exist" })
-        return res.status(200).send(user.secure())
-    } catch (err) {
-        if (err) return res.send(err)
-    }
-})
+adminAuthRouter.use(["/me/from/token", "/invite", "/signup"], expressJwt({ secret: process.env.SECRET }), adminsOnly)
 
 // Invite a new admin to the team. Must be done by another admin.
+// The request body should include name.first, name.last, and email
 adminAuthRouter.post("/invite", async (req, res) => {
-    const { email, name } = req.body
+    if (!req.body.name || !req.body.name.first || !req.body.name.last || !req.body.email) {
+        return res.status(400).send({ message: "You must include all required fields. Check the docs for more info." })
+    }
+
     try {
-        const foundUser = await AdminUser.findOne({ email })
-        if (foundUser) return res.status(403).send({ message: "User already exists" })
-        const newAdmin = req.body
-        newAdmin.admin = true
-        const token = jwt.sign(newAdmin, process.env.SECRET, { expiresIn: "24h" })
-        if (process.env.NODE_ENV === "production") {
-            // Todo: send real email using gmail with OAuth2 OR a service like Sendgrid
-            // (Gmail with plain un + pw is likely to go to junk mail these days)
-            // Todo: Check if Hubspot has an SMTP to use instead of Sendgrid
-        } else {
-            // Create an on-the-fly email and send a fake email using ethereal.email
-            // for use in development
-            nodemailer.createTestAccount((err, account) => {
-                const transporter = nodemailer.createTransport({
-                    host: 'smtp.ethereal.email',
-                    auth: {
-                        user: account.user,
-                        pass: account.pass
-                    },
-                })
-
-                const message = {
-                    from: process.env.VSCHOOL_EMAIL,
-                    to: email,
-                    subject: "VSchool LMS Admin Authorization",
-                    html: `
-                            <div style="text-align: center">
-                                <h2>MantisLMS Admin Invite</h2>
-                                <p>Welcome to the team, ${name.first}! Here's your invite to join MantisLMS as an administrator.</p>
-                                <p>Treat this email and link as if it were a password - don't give it out to anyone, and delete it when you're done signing up.</p>
-                                <a href=${process.env.ADMIN_SIGNUP_URL + "?token=" + token + "&email=" + email + "&firstName=" + name.first + "&lastName=" + name.last }>Click here to sign up as an admin.</a>
-                            </div>
-                            `
-                }
-                transporter.sendMail(message, (err, info) => {
-                    const messageUrl = nodemailer.getTestMessageUrl(info)
-                    console.log(messageUrl)
-                    return res.send({ messageId: messageUrl })
-                })
-            })
-        }
-
-    } catch (err) {
-        console.error(err)
-        return res.status(500).send(err)
+        const newAdmin = new AdminUser(req.body)
+        newAdmin.password = crypto.randomBytes(5).toString("hex")
+        await newAdmin.save()
+        const result = await sendInviteEmail(newAdmin.secure())
+        return res.status(201).send({ user: newAdmin.secure(), message: result.message })
+    } catch (e) {
+        console.error(e)
+        return res.status(500).send(e)
     }
 })
 
 // Signup as an admin. Only available if you've been sent a link from the /invite endpoint
 adminAuthRouter.post("/signup", async (req, res) => {
     try {
-        const foundUser = await AdminUser.findOne({ email: req.body.email })
-        if (foundUser) return res.status(400).send({ message: "A user with that email already exists" })
-        const admin = new AdminUser(req.body)
-        const user = await admin.save()
+        const invitedUser = req.body
+        invitedUser.admin = true
+        const updatedAdmin = await AdminUser.findByIdAndUpdate(
+            req.user._id,
+            invitedUser,
+            { new: true }
+        )
         const token = jwt.sign(
-            user.secure(),
+            updatedAdmin.secure(),
             process.env.SECRET,
             { expiresIn: "24h" }
         )
-        return res.status(201).send({ token, user: user.secure() })
-    } catch (err) {
-        console.error(err)
-        if (err) return res.status(500).send(err)
+        return res.status(201).send({ token, user: updatedAdmin.secure() })
+    } catch (e) {
+        console.error(e)
+        return res.status(500).send(e)
+    }
+})
+
+// Regular login for existing admins
+adminAuthRouter.post("/login", async (req, res) => {
+    try {
+        const admin = await AdminUser.findOne({ email: req.body.email })
+        if (!admin) return res.status(401).send({ message: "Invalid email or password" })
+        const isAuthorized = await admin.auth(req.body.password)
+        if (isAuthorized) {
+            const token = jwt.sign(
+                admin.secure(),
+                process.env.SECRET,
+                { expiresIn: "24h" }
+            )
+            return res.send({ user: admin.secure(), token })
+        }
+        return res.status(401).send({ message: "Invalid email or password" })
+    } catch (e) {
+        console.error(e)
+        return res.status(500).send(e)
+    }
+})
+
+// Get user's info based on the provided token (if page is refreshed, e.g.)
+adminAuthRouter.get("/me/from/token", async (req, res) => {
+    try {
+        const admin = await AdminUser.findById(req.user._id)
+        if (!admin) return res.status(404).send({ message: "User not found" })
+        return res.status(200).send(user.secure())
+    } catch (e) {
+        console.error(e)
+        return res.status(500).send(e)
     }
 })
 

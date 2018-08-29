@@ -4,7 +4,7 @@ const { Schema } = mongoose
 const courseSchema = new Schema({
     name: {
         type: String,
-        require: true
+        required: true
     },
     description: {
         type: String,
