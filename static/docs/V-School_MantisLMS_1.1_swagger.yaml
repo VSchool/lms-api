@@ -21,9 +21,12 @@ paths:
           A simplified version of a user object with only the info required to send an invite email. Server will handle structuring the actual data being saved, so this request body does not match the User schema exactly.
         content:
           application/json:
+            schema:
+              $ref: "#/components/schemas/StudentInvite"
             example:
-              firstName: Joe
-              lastName: Schmoe
+              name:
+                first: Joe
+                last: Schmoe
               email: joe@schmoe.rocks
               courseId: "5b7c893dd9087a39d5d3480e"
       responses:
@@ -54,12 +57,13 @@ paths:
       requestBody:
         required: true
         description: >
-          Can include anything from the user object *except* the `courses` array.
+          Can include anything from the user object *except* the `courses` array. `admin` property will always be changed to `false`.
         content:
           application/json:
             example:
-              firstName: Joe
-              lastName: Schmoe
+              name:
+                first: Joe
+                last: Schmoe
               email: joe@schmoe.rocks
               password: Imactuallyagoodguydespitemyname
               courseId: "5b7c893dd9087a39d5d3480e"
@@ -206,15 +210,15 @@ paths:
       requestBody:
         required: true
         description: >
-          Can include anything from the admin user object
+          Can include anything from the admin user object. `admin` property will always be changed to `true`.
         content:
           application/json:
             example:
-              firstName: Joe
-              lastName: Schmoe
-              email: joe@schmoe.rocks
-              password: Imactuallyagoodguydespitemyname
-              courseId: "5b7c893dd9087a39d5d3480e"
+              firstName: Jane
+              lastName: Jelilah
+              email: jane@jelilah.republican
+              password: MAGA2020
+              courseId: "5b7c893dd9087a39d5d3480f"
       responses:
         "200":
           description: >
@@ -222,24 +226,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StudentUser"
+                $ref: "#/components/schemas/AdminUser"
               example:
                 user:
                   _id: "5b76ef0e9a18a607b7418ff0"
                   name:
-                    first: Joe
-                    last: Schmoe
-                  email: joe@schmoe.rocks
-                  admin: false
+                    first: Jane
+                    last: Jelilah
+                  email: jane@jelilah.republican
+                  admin: true
                 token: "123....456....abcd"
   /auth/admins/login:
     post:
       tags: 
         - Admin Authentication
-      summary: Login route for students
+      summary: Login route for admins
       description: >
-        Most routes in Mantis are protected, requiring login. Anytime a student doesn't have a saved JWT (or it expired), this endpoint will be needed to obtain a new JWT.
-      operationId: studentLogin
+        Most routes in Mantis are protected, requiring login. Anytime an admin doesn't have a saved JWT (or it expired), this endpoint will be needed to obtain a new JWT.
+      operationId: adminLogin
       requestBody:
         required: true
         description: >
@@ -247,8 +251,8 @@ paths:
         content:
           application/json:
             example:
-              email: joe@schmoe.rocks
-              password: Imactuallyagoodguydespitemyname
+              email: jane@jelilah.republican
+              password: MAGA2020
       responses:
         "200":
           description: >
@@ -260,9 +264,9 @@ paths:
                 user:
                   _id: "5b76ef0e9a18a607b7418ff0"
                   name:
-                    first: Joe
-                    last: Schmoe
-                  email: joe@schmoe.rocks
+                    first: Jane
+                    last: Jelilah
+                  email: jane@jelilah.republican
                   admin: false
         "401":
           description: >
@@ -283,7 +287,7 @@ paths:
       summary: Get a user's info from the provided JWT
       description: >
         Anytime a student's user info is needed you can use this route to get it
-      operationId: studentInfo
+      operationId: adminInfo
       responses:
         "200":
           description: >
@@ -294,10 +298,10 @@ paths:
                 user:
                   _id: "5b76ef0e9a18a607b7418ff0"
                   name:
-                    first: Joe
-                    last: Schmoe
-                  email: joe@schmoe.rocks
-                  admin: false
+                    first: Jane
+                    last: Jelilah
+                  email: jane@jelilah.republican
+                  admin: true
         "404":
           description: >
             Student not found
@@ -524,4 +528,26 @@ components:
         description:
           type: string
         imgUrl:
+          type: string
+
+    StudentInvite:
+      type: object
+      required:
+        - name
+        - email
+        - courseId
+      properties:
+        name:
+          type: object
+          required:
+            - first
+            - last
+          properties:
+            first:
+              type: string
+            last:
+              type: string
+        email:
+          type: string
+        courseId:
           type: string
