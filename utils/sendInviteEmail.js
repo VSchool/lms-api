@@ -1,16 +1,50 @@
 const nodemailer = require("nodemailer")
+const { google } = require("googleapis")
+const OAuth2 = google.auth.OAuth2
 const jwt = require("jsonwebtoken")
+const oauth2Client = new OAuth2(
+    process.env.GOOGLE_OAUTH_CLIENT_ID,
+    process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+    "https://developers.google.com/oauthplayground"
+)
+
+oauth2Client.setCredentials({
+    refresh_token: process.env.GOOGLE_OAUTH_REFRESH_TOKEN
+})
+
+let accessToken
+
+// oauth2Client.
 
 async function sendInviteEmail(invitedUser) {
     try {
-        const account = await nodemailer.createTestAccount()
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            auth: {
-                user: account.user,
-                pass: account.pass
-            },
-        })
+        let transporter
+        if (process.env.NODE_ENV === "production") {
+            console.log("Production env")
+            transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 465,
+                secure:  true,
+                auth: {
+                    type: "OAuth2",
+                    user: process.env.VSCHOOL_EMAIL,
+                    clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
+                    clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+                    refreshToken: process.env.GOOGLE_OAUTH_REFRESH_TOKEN,
+                    accessToken: process.env.GOOGLE_OAUTH_ACCESS_TOKEN
+                }
+            })
+        } else if (process.env.NODE_ENV === "development") {
+            console.log("Dev env")
+            const account = await nodemailer.createTestAccount()
+            transporter = nodemailer.createTransport({
+                host: 'smtp.ethereal.email',
+                auth: {
+                    user: account.user,
+                    pass: account.pass
+                },
+            })
+        }
 
         const token = jwt.sign(invitedUser, process.env.SECRET, { expiresIn: "24h" })
         let html, subject
@@ -45,9 +79,14 @@ async function sendInviteEmail(invitedUser) {
         }
 
         const info = await transporter.sendMail(message)
-        const messageUrl = nodemailer.getTestMessageUrl(info)
-        console.log(messageUrl)
-        return { message: messageUrl }
+        if (process.env.NODE_ENV === "production") {
+            console.log("Your message has been send")
+            console.log(info)
+        } else {
+            const messageUrl = nodemailer.getTestMessageUrl(info)
+            console.log(messageUrl)
+            return { message: messageUrl }
+        }
     } catch (e) {
         console.error(e)
         throw new Error(e)
