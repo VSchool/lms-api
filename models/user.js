@@ -129,5 +129,6 @@ const StudentUser = BaseUser.discriminator("StudentUser", new Schema({
 
 module.exports = {
     AdminUser,
-    StudentUser
+    StudentUser,
+    BaseUser
 }

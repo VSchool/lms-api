@@ -23,7 +23,7 @@ adminAuthRouter.post("/invite", async (req, res) => {
         const result = await sendInviteEmail(newAdmin.secure())
         return res.status(201).send({ user: newAdmin.secure(), message: result.message })
     } catch (e) {
-        console.error(e)
+        console.error("There was a problem")
         return res.status(500).send(e)
     }
 })
