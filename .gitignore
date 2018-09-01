@@ -2,3 +2,4 @@
 .DS_Store
 node_modules
 *.orig
+mantislms_google_service_account_info.json
